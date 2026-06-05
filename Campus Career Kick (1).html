@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Career Kick</title>
+
+  <!-- ===== FONTS (Fontshare: Cabinet Grotesk + Satoshi) ===== -->
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- ===== CHART.JS ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+    integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF"
+    crossorigin="anonymous"></script>
+
+  <style>
+    /* ================================================
+       DESIGN TOKENS — Farben, Schriften, Abstände
+    ================================================ */
+    :root,
+    [data-theme="light"] {
+      /* Surfaces */
+      --color-bg:              #f4f6fb;
+      --color-surface:         #ffffff;
+      --color-surface-2:       #f9fafc;
+      --color-border:          #e2e6ef;
+      --color-divider:         #eaecf3;
+
+      /* Text */
+      --color-text:            #1a1f2e;
+      --color-text-muted:      #6b7280;
+      --color-text-faint:      #b0b8c9;
+
+      /* Akzentfarben */
+      --color-blue:            #2563eb;        /* Studium */
+      --color-blue-light:      #dbeafe;
+      --color-blue-mid:        #93c5fd;
+      --color-green:           #16a34a;        /* Fußball */
+      --color-green-light:     #dcfce7;
+      --color-green-mid:       #86efac;
+      --color-gold:            #d97706;        /* Job */
+      --color-gold-light:      #fef3c7;
+      --color-gold-mid:        #fcd34d;
+
+      /* Schatten */
+      --shadow-sm:             0 1px 3px rgba(30,41,59,0.07);
+      --shadow-md:             0 4px 16px rgba(30,41,59,0.09);
+      --shadow-lg:             0 12px 40px rgba(30,41,59,0.12);
+
+      /* Radien */
+      --radius-md:             0.75rem;
+      --radius-lg:             1.25rem;
+      --radius-full:           9999px;
+
+      /* Spacing (4-px base) */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+
+      /* Typografie */
+      --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+      --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+      --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+      --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+      --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+
+      --font-display: 'Cabinet Grotesk', 'Helvetica Neue', sans-serif;
+      --font-body:    'Satoshi', 'Inter', sans-serif;
+
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ===== DARK MODE ===== */
+    [data-theme="dark"] {
+      --color-bg:              #0f1117;
+      --color-surface:         #161b27;
+      --color-surface-2:       #1c2235;
+      --color-border:          #252d40;
+      --color-divider:         #1e2539;
+      --color-text:            #e2e8f0;
+      --color-text-muted:      #8892a4;
+      --color-text-faint:      #4a556a;
+      --color-blue:            #60a5fa;
+      --color-blue-light:      #1e3a5f;
+      --color-blue-mid:        #3b82f6;
+      --color-green:           #4ade80;
+      --color-green-light:     #14432a;
+      --color-green-mid:       #22c55e;
+      --color-gold:            #fbbf24;
+      --color-gold-light:      #44300a;
+      --color-gold-mid:        #f59e0b;
+      --shadow-sm:             0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md:             0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg:             0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    /* System-Präferenz Fallback */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --color-bg:              #0f1117;
+        --color-surface:         #161b27;
+        --color-surface-2:       #1c2235;
+        --color-border:          #252d40;
+        --color-divider:         #1e2539;
+        --color-text:            #e2e8f0;
+        --color-text-muted:      #8892a4;
+        --color-text-faint:      #4a556a;
+        --color-blue:            #60a5fa;
+        --color-blue-light:      #1e3a5f;
+        --color-blue-mid:        #3b82f6;
+        --color-green:           #4ade80;
+        --color-green-light:     #14432a;
+        --color-green-mid:       #22c55e;
+        --color-gold:            #fbbf24;
+        --color-gold-light:      #44300a;
+        --color-gold-mid:        #f59e0b;
+        --shadow-sm:             0 1px 3px rgba(0,0,0,0.3);
+        --shadow-md:             0 4px 16px rgba(0,0,0,0.4);
+        --shadow-lg:             0 12px 40px rgba(0,0,0,0.5);
+      }
+    }
+
+    /* ================================================
+       BASE RESET
+    ================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      scroll-behavior: smooth;
+    }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+    }
+    img, svg { display: block; max-width: 100%; }
+    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+    ul { list-style: none; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ================================================
+       LAYOUT — Seiten-Container + Bento Grid
+    ================================================ */
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: var(--space-6) var(--space-5);
+    }
+
+    /* Bento Grid */
+    .bento {
+      display: grid;
+      gap: var(--space-5);
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    /* Grid-Platzierungen */
+    .card-heute        { grid-column: span 4; }
+    .card-studium      { grid-column: span 4; }
+    .card-job          { grid-column: span 4; }
+    .card-fussball     { grid-column: span 3; }
+    .card-wochenziele  { grid-column: span 4; }
+    .card-statistik    { grid-column: span 5; }
+
+    @media (max-width: 900px) {
+      .card-heute, .card-studium, .card-job { grid-column: span 6; }
+      .card-fussball, .card-wochenziele { grid-column: span 6; }
+      .card-statistik { grid-column: span 12; }
+    }
+    @media (max-width: 600px) {
+      .bento { gap: var(--space-4); }
+      .card-heute, .card-studium, .card-job,
+      .card-fussball, .card-wochenziele, .card-statistik { grid-column: span 12; }
+    }
+
+    /* ================================================
+       HEADER
+    ================================================ */
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-8);
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    /* SVG-Logo */
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--color-text);
+    }
+
+    .header-text p {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      margin-top: 0.1rem;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .date-badge {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      padding: var(--space-1) var(--space-3);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      transition: color var(--transition), background var(--transition), border-color var(--transition);
+    }
+    .theme-toggle:hover { color: var(--color-text); background: var(--color-surface-2); }
+
+    /* ================================================
+       CARDS — Basis
+    ================================================ */
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow var(--transition), transform var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .card:hover { box-shadow: var(--shadow-md); }
+
+    /* Card Header */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-2);
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .card-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .card-icon.blue  { background: var(--color-blue-light);  color: var(--color-blue); }
+    .card-icon.green { background: var(--color-green-light); color: var(--color-green); }
+    .card-icon.gold  { background: var(--color-gold-light);  color: var(--color-gold); }
+    .card-icon.gray  { background: var(--color-divider);      color: var(--color-text-muted); }
+    .card-icon.purple { background: #ede9fe; color: #7c3aed; }
+
+    [data-theme="dark"] .card-icon.purple { background: #2e1b4f; color: #a78bfa; }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--color-text);
+    }
+
+    .card-badge {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      padding: 2px var(--space-2);
+    }
+    .badge-blue  { background: var(--color-blue-light);  color: var(--color-blue); }
+    .badge-green { background: var(--color-green-light); color: var(--color-green); }
+    .badge-gold  { background: var(--color-gold-light);  color: var(--color-gold); }
+    .badge-gray  { background: var(--color-divider); color: var(--color-text-muted); }
+
+    /* ================================================
+       HEUTE-KARTE — Aufgaben-Liste
+    ================================================ */
+    .task-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition);
+      border: 1px solid transparent;
+    }
+    .task-item:hover { background: var(--color-surface-2); border-color: var(--color-border); }
+
+    .task-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 2px solid var(--color-border);
+      flex-shrink: 0;
+      transition: border-color var(--transition), background var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .task-item.done .task-check {
+      background: var(--color-blue);
+      border-color: var(--color-blue);
+    }
+    .task-item.done .task-check::after {
+      content: '';
+      width: 5px;
+      height: 9px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      display: block;
+    }
+    .task-text { font-size: var(--text-sm); color: var(--color-text); flex: 1; }
+    .task-item.done .task-text { text-decoration: line-through; color: var(--color-text-muted); }
+
+    .task-time {
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      white-space: nowrap;
+    }
+
+    /* ================================================
+       STUDIUM-KARTE — Progress + Deadlines
+    ================================================ */
+    .progress-block { display: flex; flex-direction: column; gap: var(--space-2); }
+    .progress-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .progress-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--color-text-muted);
+    }
+    .progress-pct {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      color: var(--color-blue);
+    }
+    .progress-bar-track {
+      height: 7px;
+      background: var(--color-blue-light);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--color-blue);
+      border-radius: var(--radius-full);
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .deadline-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .deadline-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-surface-2);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--color-blue);
+    }
+    .deadline-name { font-size: var(--text-sm); color: var(--color-text); }
+    .deadline-date { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .deadline-item.warn { border-left-color: var(--color-gold); }
+    .deadline-item.urgent { border-left-color: #ef4444; }
+
+    /* Lernziele-Chips */
+    .chip-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .chip {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      padding: 3px var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--color-blue-light);
+      color: var(--color-blue);
+      border: 1px solid var(--color-blue-mid);
+    }
+
+    /* ================================================
+       JOB-KARTE
+    ================================================ */
+    .job-hours-row {
+      display: flex;
+      gap: var(--space-3);
+    }
+    .job-stat-box {
+      flex: 1;
+      background: var(--color-gold-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .job-stat-value {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 800;
+      color: var(--color-gold);
+      letter-spacing: -0.02em;
+    }
+    .job-stat-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .section-label {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-faint);
+      margin-bottom: var(--space-1);
+    }
+
+    /* ================================================
+       FUSSBALL-KARTE
+    ================================================ */
+    .energy-meter {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .energy-dots {
+      display: flex;
+      gap: var(--space-1);
+    }
+    .energy-dot {
+      flex: 1;
+      height: 8px;
+      border-radius: var(--radius-full);
+      background: var(--color-green-light);
+      transition: background var(--transition);
+    }
+    .energy-dot.active { background: var(--color-green); }
+
+    .match-highlight {
+      background: var(--color-green-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .match-vs {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--color-green);
+    }
+    .match-date { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+    /* ================================================
+       WOCHENZIELE-KARTE
+    ================================================ */
+    .goal-list { display: flex; flex-direction: column; gap: var(--space-3); }
+    .goal-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      transition: border-color var(--transition);
+    }
+    .goal-item:hover { border-color: var(--color-blue-mid); }
+    .goal-num {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background: var(--color-blue-light);
+      color: var(--color-blue);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .goal-item:nth-child(2) .goal-num { background: var(--color-gold-light); color: var(--color-gold); }
+    .goal-item:nth-child(3) .goal-num { background: var(--color-green-light); color: var(--color-green); }
+    .goal-text { font-size: var(--text-sm); color: var(--color-text); line-height: 1.4; }
+    .goal-sub  { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+    /* ================================================
+       STATISTIK-KARTE — Chart.js
+    ================================================ */
+    .kpi-row {
+      display: flex;
+      gap: var(--space-4);
+    }
+    .kpi-box {
+      flex: 1;
+      text-align: center;
+    }
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+    .kpi-blue  { color: var(--color-blue); }
+    .kpi-gold  { color: var(--color-gold); }
+    .kpi-green { color: var(--color-green); }
+    .kpi-label { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+    .chart-container {
+      position: relative;
+      height: 160px;
+    }
+
+    /* ================================================
+       DIVIDER in Cards
+    ================================================ */
+    .card-divider {
+      height: 1px;
+      background: var(--color-divider);
+      border: none;
+      margin: 0 calc(-1 * var(--space-1));
+    }
+
+    /* ================================================
+       FOOTER
+    ================================================ */
+    .site-footer {
+      text-align: center;
+      padding: var(--space-8) 0 var(--space-4);
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ================================================
+       HEADER
+  ================================================ -->
+  <header class="site-header">
+    <div class="header-brand">
+      <!-- SVG-Logo: kombiniertes C-K-Signet mit Abschluss-Kappe und Kick-Bewegung -->
+      <svg class="brand-logo" viewBox="0 0 44 44" fill="none" aria-label="Campus Career Kick Logo" xmlns="http://www.w3.org/2000/svg">
+        <rect width="44" height="44" rx="12" fill="#2563eb"/>
+        <!-- Buchstabe C -->
+        <path d="M14 15 C14 13 16 12 18 12 L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 15 L14 29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 29 C14 31 16 32 18 32 L22 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Buchstabe K -->
+        <line x1="25" y1="12" x2="25" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="header-text">
+        <h1>Campus Career Kick</h1>
+        <p>Dein persönliches Dashboard — Studium, Job & Fußball auf einen Blick.</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="date-badge" id="dateBadge"></div>
+      <button class="theme-toggle" data-theme-toggle aria-label="Dark Mode aktivieren">
+        <!-- Mond-Icon (initial, wird per JS angepasst) -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================================================
+       BENTO GRID
+  ================================================ -->
+  <main class="bento">
+
+    <!-- ===== KARTE: HEUTE ===== -->
+    <section class="card card-heute">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon gray">📅</span>
+          <span class="card-title">Heute</span>
+        </div>
+        <span class="card-badge badge-gray" id="taskCount">5 Aufgaben</span>
+      </div>
+
+      <!-- Klickbare Aufgabenliste -->
+      <ul class="task-list" id="taskList" role="list">
+        <li class="task-item done" data-done="true">
+          <div class="task-check"></div>
+          <span class="task-text">Vorlesung Informationssysteme</span>
+          <span class="task-time">08:00</span>
+        </li>
+        <li class="task-item" data-done="false">
+          <div class="task-check"></div>
+          <span class="task-text">Thesis-Kapitel 3 überarbeiten</span>
+          <span class="task-time">10:00</span>
+        </li>
+        <li class="task-item" data-done="false">
+          <div class="task-check"></div>
+          <span class="task-text">Datarocket: Dashboard-Update</span>
+          <span class="task-time">13:00</span>
+        </li>
+        <li class="task-item" data-done="false">
+          <div class="task-check"></div>
+          <span class="task-text">Fußballtraining 🏃</span>
+          <span class="task-time">18:30</span>
+        </li>
+        <li class="task-item" data-done="false">
+          <div class="task-check"></div>
+          <span class="task-text">Wochenziele reviewen</span>
+          <span class="task-time">21:00</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== KARTE: STUDIUM ===== -->
+    <section class="card card-studium">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon blue">🎓</span>
+          <span class="card-title">Studium</span>
+        </div>
+        <span class="card-badge badge-blue">M.Sc. WI</span>
+      </div>
+
+      <!-- Thesis-Fortschritt -->
+      <div class="progress-block">
+        <div class="progress-label-row">
+          <span class="progress-label">Masterarbeit Fortschritt</span>
+          <span class="progress-pct" id="thesisPct">62%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="thesisFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Deadlines -->
+      <div>
+        <p class="section-label">Deadlines</p>
+        <ul class="deadline-list" role="list">
+          <li class="deadline-item urgent">
+            <span class="deadline-name">Seminararbeit KI</span>
+            <span class="deadline-date">10. Jun</span>
+          </li>
+          <li class="deadline-item warn">
+            <span class="deadline-name">Thesis Expose</span>
+            <span class="deadline-date">28. Jun</span>
+          </li>
+          <li class="deadline-item">
+            <span class="deadline-name">Klausur BWL</span>
+            <span class="deadline-date">15. Jul</span>
+          </li>
+        </ul>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Lernziele -->
+      <div>
+        <p class="section-label">Aktuelle Lernziele</p>
+        <div class="chip-list">
+          <span class="chip">Neuronale Netze</span>
+          <span class="chip">SQL Optimierung</span>
+          <span class="chip">Agile Methoden</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== KARTE: JOB ===== -->
+    <section class="card card-job">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon gold">💼</span>
+          <span class="card-title">Werkstudentenjob</span>
+        </div>
+        <span class="card-badge badge-gold">Datarocket</span>
+      </div>
+
+      <!-- Stunden-Stats -->
+      <div class="job-hours-row">
+        <div class="job-stat-box">
+          <span class="job-stat-value">16 h</span>
+          <span class="job-stat-label">Diese Woche</span>
+        </div>
+        <div class="job-stat-box">
+          <span class="job-stat-value">20 h</span>
+          <span class="job-stat-label">Soll / Woche</span>
+        </div>
+        <div class="job-stat-box">
+          <span class="job-stat-value">4 h</span>
+          <span class="job-stat-label">Noch offen</span>
+        </div>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Aufgaben diese Woche -->
+      <div>
+        <p class="section-label">Fokus diese Woche</p>
+        <ul class="task-list" role="list">
+          <li class="task-item done" data-done="true">
+            <div class="task-check"></div>
+            <span class="task-text">Power BI Report Produktion</span>
+          </li>
+          <li class="task-item" data-done="false">
+            <div class="task-check"></div>
+            <span class="task-text">Datenpipeline Dokumentation</span>
+          </li>
+          <li class="task-item" data-done="false">
+            <div class="task-check"></div>
+            <span class="task-text">SharePoint-Migration prüfen</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== KARTE: FUSSBALL ===== -->
+    <section class="card card-fussball">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon green">⚽</span>
+          <span class="card-title">Fußball</span>
+        </div>
+        <span class="card-badge badge-green">Aktiv</span>
+      </div>
+
+      <!-- Energielevel -->
+      <div class="energy-meter">
+        <p class="section-label">Energielevel</p>
+        <div class="energy-dots" aria-label="Energielevel: 7 von 10">
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot active"></div>
+          <div class="energy-dot"></div>
+          <div class="energy-dot"></div>
+          <div class="energy-dot"></div>
+        </div>
+        <span style="font-size: var(--text-xs); color: var(--color-text-muted);">7 / 10 — Bereit fürs Training</span>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Nächstes Training -->
+      <div>
+        <p class="section-label">Training</p>
+        <ul class="task-list" role="list">
+          <li class="task-item" data-done="false">
+            <div class="task-check" style="border-color: var(--color-green);"></div>
+            <span class="task-text">Heute Abend, 18:30</span>
+          </li>
+          <li class="task-item" data-done="false">
+            <div class="task-check" style="border-color: var(--color-green);"></div>
+            <span class="task-text">Donnerstag, 19:00</span>
+          </li>
+        </ul>
+      </div>
+
+      <hr class="card-divider" />
+
+      <!-- Nächstes Spiel -->
+      <div class="match-highlight">
+        <span style="font-size: 1.5rem;">🏟️</span>
+        <div>
+          <div class="match-vs">Osnabrück Titans vs. Hafen FC</div>
+          <div class="match-date">Sa, 14. Jun · 15:00 Uhr</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== KARTE: WOCHENZIELE ===== -->
+    <section class="card card-wochenziele">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon purple">🎯</span>
+          <span class="card-title">Wochenziele</span>
+        </div>
+        <span class="card-badge" style="background: #ede9fe; color: #7c3aed;">KW 23</span>
+      </div>
+
+      <ul class="goal-list" role="list">
+        <li class="goal-item">
+          <span class="goal-num">1</span>
+          <div>
+            <p class="goal-text">Thesis-Kapitel 3 & 4 finalisieren</p>
+            <p class="goal-sub">Deadline: 10. Juni · 62 % erledigt</p>
+          </div>
+        </li>
+        <li class="goal-item">
+          <span class="goal-num">2</span>
+          <div>
+            <p class="goal-text">Werkstunden-Soll erreichen (20 h)</p>
+            <p class="goal-sub">Noch 4 Stunden offen</p>
+          </div>
+        </li>
+        <li class="goal-item">
+          <span class="goal-num">3</span>
+          <div>
+            <p class="goal-text">Beide Trainingseinheiten mitmachen</p>
+            <p class="goal-sub">Di + Do · 90 min je</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ===== KARTE: STATISTIK ===== -->
+    <section class="card card-statistik">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon gray">📊</span>
+          <span class="card-title">Woche im Überblick</span>
+        </div>
+        <span class="card-badge badge-gray">KW 23</span>
+      </div>
+
+      <!-- KPI-Zahlen -->
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-value kpi-blue">18 h</div>
+          <div class="kpi-label">Lernzeit</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-value kpi-gold">16 h</div>
+          <div class="kpi-label">Arbeitszeit</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-value kpi-green">3 h</div>
+          <div class="kpi-label">Training</div>
+        </div>
+      </div>
+
+      <!-- Balkendiagramm -->
+      <div class="chart-container">
+        <canvas id="weekChart" aria-label="Wochenstatistik Balkendiagramm"></canvas>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    Campus Career Kick &mdash; dein persönliches Dashboard · <span id="footerYear"></span>
+  </footer>
+
+</div><!-- /.page -->
+
+
+<!-- ================================================
+     JAVASCRIPT
+================================================ -->
+<script>
+/* ─── 1. Datum im Header ─────────────────────────────────────────── */
+(function () {
+  const el = document.getElementById('dateBadge');
+  if (!el) return;
+  const now = new Date();
+  const opts = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+  el.textContent = now.toLocaleDateString('de-DE', opts);
+  document.getElementById('footerYear').textContent = now.getFullYear();
+})();
+
+/* ─── 2. Dark/Light-Mode Toggle ─────────────────────────────────── */
+(function () {
+  const toggle = document.querySelector('[data-theme-toggle]');
+  const root   = document.documentElement;
+
+  // System-Präferenz lesen
+  let current = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  root.setAttribute('data-theme', current);
+  updateIcon(current);
+
+  toggle && toggle.addEventListener('click', () => {
+    current = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', current);
+    toggle.setAttribute('aria-label', `${current === 'dark' ? 'Light' : 'Dark'} Mode aktivieren`);
+    updateIcon(current);
+    // Chart-Farben neu rendern
+    if (window.weekChartInstance) {
+      updateChartTheme(current);
+    }
+  });
+
+  function updateIcon(theme) {
+    if (!toggle) return;
+    toggle.innerHTML = theme === 'dark'
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+           <circle cx="12" cy="12" r="5"/>
+           <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+         </svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+         </svg>`;
+  }
+})();
+
+/* ─── 3. Aufgaben abhaken (Heute + Job) ─────────────────────────── */
+document.querySelectorAll('.task-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const done = item.dataset.done === 'true';
+    item.dataset.done = done ? 'false' : 'true';
+    item.classList.toggle('done', !done);
+    updateTaskCount();
+  });
+});
+
+function updateTaskCount() {
+  const list  = document.getElementById('taskList');
+  if (!list) return;
+  const total = list.querySelectorAll('.task-item').length;
+  const done  = list.querySelectorAll('.task-item.done').length;
+  const badge = document.getElementById('taskCount');
+  if (badge) badge.textContent = `${done}/${total} erledigt`;
+}
+updateTaskCount();
+
+/* ─── 4. Thesis-Fortschrittsbalken animieren ─────────────────────── */
+(function () {
+  const fill = document.getElementById('thesisFill');
+  if (!fill) return;
+  // Kurze Verzögerung für Animation beim Laden
+  setTimeout(() => { fill.style.width = '62%'; }, 200);
+})();
+
+/* ─── 5. Chart.js — Wochenstatistik ──────────────────────────────── */
+function getChartColors(theme) {
+  const isDark = theme === 'dark';
+  return {
+    blue:      isDark ? '#60a5fa' : '#2563eb',
+    blueAlpha: isDark ? 'rgba(96,165,250,0.15)' : 'rgba(37,99,235,0.12)',
+    gold:      isDark ? '#fbbf24' : '#d97706',
+    goldAlpha: isDark ? 'rgba(251,191,36,0.15)' : 'rgba(217,119,6,0.12)',
+    green:     isDark ? '#4ade80' : '#16a34a',
+    greenAlpha:isDark ? 'rgba(74,222,128,0.15)' : 'rgba(22,163,74,0.12)',
+    text:      isDark ? '#8892a4' : '#6b7280',
+    grid:      isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+  };
+}
+
+function buildChart(theme) {
+  const ctx = document.getElementById('weekChart');
+  if (!ctx) return;
+
+  const c = getChartColors(theme);
+  const labels = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+  // Beispieldaten (Summen: Studium=18h, Job=16h, Training=3h)
+  const studiumData = [3, 4, 3, 4, 3, 1, 0];  // Summe: 18 h
+  const jobData     = [4, 4, 4, 4, 0, 0, 0];  // Summe: 16 h
+  const sportData   = [0, 1.5, 0, 1.5, 0, 0, 0]; // Summe: 3 h
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Studium',
+          data: studiumData,
+          backgroundColor: c.blue,
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'Job',
+          data: jobData,
+          backgroundColor: c.gold,
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'Training',
+          data: sportData,
+          backgroundColor: c.green,
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 800, easing: 'easeOutQuart' },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: "'Satoshi', 'Inter', sans-serif", size: 11 },
+            color: c.text,
+            usePointStyle: true,
+            pointStyleWidth: 8,
+            boxHeight: 8,
+            padding: 12,
+          },
+        },
+        tooltip: {
+          backgroundColor: theme === 'dark' ? '#1c2235' : '#ffffff',
+          borderColor:     theme === 'dark' ? '#252d40' : '#e2e6ef',
+          borderWidth: 1,
+          titleColor:  theme === 'dark' ? '#e2e8f0' : '#1a1f2e',
+          bodyColor:   theme === 'dark' ? '#8892a4' : '#6b7280',
+          padding: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} h`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: {
+            font: { family: "'Satoshi', sans-serif", size: 11 },
+            color: c.text,
+          },
+          border: { display: false },
+        },
+        y: {
+          stacked: true,
+          grid: { color: c.grid },
+          ticks: {
+            font: { family: "'Satoshi', sans-serif", size: 11 },
+            color: c.text,
+            callback: v => v + ' h',
+          },
+          border: { display: false },
+          max: 10,
+        },
+      },
+    },
+  });
+
+  window.weekChartInstance = chart;
+}
+
+function updateChartTheme(theme) {
+  if (window.weekChartInstance) {
+    window.weekChartInstance.destroy();
+  }
+  buildChart(theme);
+}
+
+// Chart beim Laden initialisieren
+(function () {
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  buildChart(theme);
+})();
+</script>
+
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
