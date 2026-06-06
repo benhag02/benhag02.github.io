@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Career Kick</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg:#f4f6fb; --color-surface:#ffffff; --color-surface-2:#f9fafc; --color-border:#e2e6ef; --color-divider:#eaecf3;
+      --color-text:#1a1f2e; --color-text-muted:#6b7280; --color-text-faint:#b0b8c9;
+      --color-blue:#2563eb; --color-blue-light:#dbeafe; --color-blue-mid:#93c5fd;
+      --color-green:#16a34a; --color-green-light:#dcfce7; --color-green-mid:#86efac;
+      --color-gold:#d97706; --color-gold-light:#fef3c7; --color-gold-mid:#fcd34d;
+      --shadow-sm:0 1px 3px rgba(30,41,59,0.07); --shadow-md:0 4px 16px rgba(30,41,59,0.09); --shadow-lg:0 12px 40px rgba(30,41,59,0.12);
+      --radius-md:0.75rem; --radius-lg:1.25rem; --radius-full:9999px;
+      --space-1:0.25rem; --space-2:0.5rem; --space-3:0.75rem; --space-4:1rem; --space-5:1.25rem; --space-6:1.5rem; --space-8:2rem; --space-10:2.5rem; --space-12:3rem;
+      --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem); --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem); --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem); --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem); --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+      --font-display:'Cabinet Grotesk','Helvetica Neue',sans-serif; --font-body:'Satoshi','Inter',sans-serif; --transition:180ms cubic-bezier(0.16,1,0.3,1);
+    }
+    [data-theme="dark"] {
+      --color-bg:#0f1117; --color-surface:#161b27; --color-surface-2:#1c2235; --color-border:#252d40; --color-divider:#1e2539;
+      --color-text:#e2e8f0; --color-text-muted:#8892a4; --color-text-faint:#4a556a;
+      --color-blue:#60a5fa; --color-blue-light:#1e3a5f; --color-blue-mid:#3b82f6;
+      --color-green:#4ade80; --color-green-light:#14432a; --color-green-mid:#22c55e;
+      --color-gold:#fbbf24; --color-gold-light:#44300a; --color-gold-mid:#f59e0b;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.3); --shadow-md:0 4px 16px rgba(0,0,0,0.4); --shadow-lg:0 12px 40px rgba(0,0,0,0.5);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+    body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.6}
+    button,input,select{font:inherit} button{cursor:pointer;border:none} ul{list-style:none}
+    .page{max-width:1280px;margin:0 auto;padding:var(--space-6) var(--space-5)}
+    .bento{display:grid;gap:var(--space-5);grid-template-columns:repeat(12,1fr)}
+    .card-heute,.card-studium,.card-job{grid-column:span 4}.card-fussball{grid-column:span 5}.card-wochenziele{grid-column:span 3}.card-statistik{grid-column:span 4}
+    @media (max-width: 980px){.card-heute,.card-studium,.card-job,.card-fussball,.card-wochenziele,.card-statistik{grid-column:span 6}}
+    @media (max-width: 640px){.bento{gap:var(--space-4)} .card-heute,.card-studium,.card-job,.card-fussball,.card-wochenziele,.card-statistik{grid-column:span 12}}
+    .site-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-8);gap:var(--space-4);flex-wrap:wrap}
+    .header-brand,.card-title-group,.header-meta{display:flex;align-items:center;gap:var(--space-3)}
+    .brand-logo{width:44px;height:44px;flex-shrink:0}.header-text h1{font-family:var(--font-display);font-size:var(--text-xl);font-weight:800;line-height:1.1;letter-spacing:-0.02em}.header-text p{font-size:var(--text-sm);color:var(--color-text-muted);margin-top:0.1rem}
+    .date-badge,.pill{font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:var(--space-1) var(--space-3)}
+    .theme-toggle,.mini-btn,.icon-btn{border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);transition:all var(--transition)}
+    .theme-toggle{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center}.theme-toggle:hover,.mini-btn:hover,.icon-btn:hover{color:var(--color-text);background:var(--color-surface-2)}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:var(--space-4)}
+    .card-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)} .card-icon{width:32px;height:32px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .card-icon.blue{background:var(--color-blue-light);color:var(--color-blue)} .card-icon.green{background:var(--color-green-light);color:var(--color-green)} .card-icon.gold{background:var(--color-gold-light);color:var(--color-gold)} .card-icon.gray{background:var(--color-divider);color:var(--color-text-muted)} .card-icon.purple{background:#ede9fe;color:#7c3aed}
+    [data-theme="dark"] .card-icon.purple{background:#2e1b4f;color:#a78bfa}
+    .card-title{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;letter-spacing:-0.01em}.card-badge{font-size:var(--text-xs);font-weight:600;border-radius:var(--radius-full);padding:2px var(--space-2)}
+    .badge-blue{background:var(--color-blue-light);color:var(--color-blue)} .badge-green{background:var(--color-green-light);color:var(--color-green)} .badge-gold{background:var(--color-gold-light);color:var(--color-gold)} .badge-gray{background:var(--color-divider);color:var(--color-text-muted)}
+    .section-label{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-faint);margin-bottom:var(--space-1)}
+    .card-divider{height:1px;background:var(--color-divider);border:none}
+    .task-list,.deadline-list,.goal-list,.calendar-list,.schedule-list{display:flex;flex-direction:column;gap:var(--space-2)}
+    .task-item,.calendar-item,.schedule-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);border:1px solid transparent;background:var(--color-surface-2)}
+    .task-item{cursor:pointer}.task-item:hover,.calendar-item:hover,.schedule-item:hover{border-color:var(--color-border)}
+    .task-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--color-border);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+    .task-item.done .task-check{background:var(--color-blue);border-color:var(--color-blue)} .task-item.done .task-check::after{content:'';width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block}
+    .task-text,.calendar-main,.schedule-main{flex:1;min-width:0}.task-text{font-size:var(--text-sm)} .task-item.done .task-text{text-decoration:line-through;color:var(--color-text-muted)} .task-time,.calendar-meta,.schedule-meta{font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap}
+    .editor-shell{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+    .editor-grid{display:grid;grid-template-columns:1.4fr 0.8fr auto;gap:var(--space-2)} .football-grid{display:grid;grid-template-columns:1.1fr 0.7fr 0.7fr 0.8fr auto;gap:var(--space-2)}
+    @media (max-width:700px){.editor-grid,.football-grid{grid-template-columns:1fr}}
+    .field,.select{width:100%;padding:0.7rem 0.8rem;border-radius:0.8rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text)}
+    .mini-btn{padding:0.72rem 0.9rem;border-radius:0.8rem;font-weight:600} .mini-btn.primary{background:var(--color-blue);color:#fff;border-color:var(--color-blue)} .mini-btn.primary:hover{filter:brightness(0.98)} .mini-btn.green{background:var(--color-green);color:#fff;border-color:var(--color-green)}
+    .icon-btn{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .progress-block,.energy-meter{display:flex;flex-direction:column;gap:var(--space-2)} .progress-label-row{display:flex;justify-content:space-between;align-items:baseline}
+    .progress-label,.job-stat-label,.kpi-label{font-size:var(--text-xs);color:var(--color-text-muted)} .progress-pct{font-size:var(--text-xs);font-weight:700;color:var(--color-blue)} .progress-bar-track{height:7px;background:var(--color-blue-light);border-radius:var(--radius-full);overflow:hidden} .progress-bar-fill{height:100%;background:var(--color-blue);border-radius:var(--radius-full);transition:width 1s cubic-bezier(0.16,1,0.3,1)}
+    .deadline-item{display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border-radius:var(--radius-md);border-left:3px solid var(--color-blue)} .deadline-item.warn{border-left-color:var(--color-gold)} .deadline-item.urgent{border-left-color:#ef4444}
+    .chip-list{display:flex;flex-wrap:wrap;gap:var(--space-2)} .chip{font-size:var(--text-xs);font-weight:500;padding:3px var(--space-3);border-radius:var(--radius-full);background:var(--color-blue-light);color:var(--color-blue);border:1px solid var(--color-blue-mid)}
+    .job-hours-row,.kpi-row{display:flex;gap:var(--space-3)} .job-stat-box,.kpi-box{flex:1} .job-stat-box{background:var(--color-gold-light);border-radius:var(--radius-md);padding:var(--space-3)}
+    .job-stat-value,.kpi-value{font-family:var(--font-display);font-size:var(--text-lg);font-weight:800;letter-spacing:-0.02em}.job-stat-value{color:var(--color-gold)} .kpi-box{text-align:center}.kpi-blue{color:var(--color-blue)} .kpi-gold{color:var(--color-gold)} .kpi-green{color:var(--color-green)}
+    .energy-dots{display:flex;gap:var(--space-1)} .energy-dot{flex:1;height:8px;border-radius:var(--radius-full);background:var(--color-green-light)} .energy-dot.active{background:var(--color-green)}
+    .match-highlight{background:var(--color-green-light);border-radius:var(--radius-md);padding:var(--space-3);display:flex;align-items:center;gap:var(--space-3)} .match-vs{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;color:var(--color-green)} .match-date{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px} .calendar-dayhead{font-size:11px;color:var(--color-text-faint);text-align:center;padding-bottom:4px} .calendar-cell{min-height:62px;border-radius:0.9rem;border:1px solid var(--color-border);background:var(--color-surface-2);padding:8px;display:flex;flex-direction:column;gap:4px} .calendar-cell.is-outside{opacity:.45} .calendar-cell.has-event{border-color:var(--color-green-mid)} .calendar-daynum{font-size:12px;font-weight:700;color:var(--color-text-muted)} .calendar-pill{font-size:10px;line-height:1.2;padding:2px 6px;border-radius:999px;display:inline-flex;align-self:flex-start} .calendar-pill.training{background:var(--color-green-light);color:var(--color-green)} .calendar-pill.match{background:var(--color-gold-light);color:var(--color-gold)}
+    .chart-container{position:relative;height:160px}.site-footer{text-align:center;padding:var(--space-8) 0 var(--space-4);font-size:var(--text-xs);color:var(--color-text-faint)}
+  </style>
+</head>
+<body>
+<div class="page">
+  <header class="site-header">
+    <div class="header-brand">
+      <svg class="brand-logo" viewBox="0 0 44 44" fill="none" aria-label="Campus Career Kick Logo" xmlns="http://www.w3.org/2000/svg">
+        <rect width="44" height="44" rx="12" fill="#2563eb"/>
+        <path d="M14 15 C14 13 16 12 18 12 L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 15 L14 29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 29 C14 31 16 32 18 32 L22 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="12" x2="25" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="header-text">
+        <h1>Campus Career Kick</h1>
+        <p>Bearbeitbares Dashboard für Studium, Job und Fußballtermine.</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="date-badge" id="dateBadge"></div>
+      <div class="pill" id="footballMonthLabel"></div>
+      <button class="theme-toggle" data-theme-toggle aria-label="Dark Mode aktivieren"></button>
+    </div>
+  </header>
+  <main class="bento">
+    <section class="card card-heute">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon gray">📅</span><span class="card-title">Heute</span></div><span class="card-badge badge-gray" id="todayTaskCount"></span></div>
+      <div class="editor-shell">
+        <p class="section-label">Aufgabe hinzufügen</p>
+        <form id="todayTaskForm" class="editor-grid">
+          <input class="field" name="title" placeholder="Neue Aufgabe" required />
+          <input class="field" name="time" type="time" />
+          <button class="mini-btn primary" type="submit">Hinzufügen</button>
+        </form>
+      </div>
+      <ul class="task-list" id="todayTaskList" role="list"></ul>
+    </section>
+    <section class="card card-studium">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon blue">🎓</span><span class="card-title">Studium</span></div><span class="card-badge badge-blue">M.Sc. WI</span></div>
+      <div class="progress-block"><div class="progress-label-row"><span class="progress-label">Masterarbeit Fortschritt</span><span class="progress-pct" id="thesisPct">62%</span></div><div class="progress-bar-track"><div class="progress-bar-fill" id="thesisFill" style="width:0%"></div></div></div>
+      <hr class="card-divider" />
+      <div><p class="section-label">Deadlines</p><ul class="deadline-list" role="list"><li class="deadline-item urgent"><span>Seminararbeit KI</span><span class="deadline-date">10. Jun</span></li><li class="deadline-item warn"><span>Thesis Exposé</span><span class="deadline-date">28. Jun</span></li><li class="deadline-item"><span>Klausur BWL</span><span class="deadline-date">15. Jul</span></li></ul></div>
+      <hr class="card-divider" />
+      <div><p class="section-label">Aktuelle Lernziele</p><div class="chip-list"><span class="chip">Neuronale Netze</span><span class="chip">SQL Optimierung</span><span class="chip">Agile Methoden</span></div></div>
+    </section>
+    <section class="card card-job">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon gold">💼</span><span class="card-title">Werkstudentenjob</span></div><span class="card-badge badge-gold">Datarocket</span></div>
+      <div class="job-hours-row"><div class="job-stat-box"><span class="job-stat-value">16 h</span><span class="job-stat-label">Diese Woche</span></div><div class="job-stat-box"><span class="job-stat-value">20 h</span><span class="job-stat-label">Soll / Woche</span></div><div class="job-stat-box"><span class="job-stat-value">4 h</span><span class="job-stat-label">Noch offen</span></div></div>
+      <hr class="card-divider" />
+      <div class="editor-shell"><p class="section-label">Fokus-Aufgabe hinzufügen</p><form id="jobTaskForm" class="editor-grid"><input class="field" name="title" placeholder="Neue Job-Aufgabe" required /><input class="field" name="time" placeholder="z. B. heute" /><button class="mini-btn" type="submit">Eintragen</button></form></div>
+      <ul class="task-list" id="jobTaskList" role="list"></ul>
+    </section>
+    <section class="card card-fussball">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon green">⚽</span><span class="card-title">Fußball</span></div><span class="card-badge badge-green" id="footballBadge">Aktiv</span></div>
+      <div class="energy-meter"><p class="section-label">Energielevel</p><div class="energy-dots" id="energyDots"></div><span style="font-size:var(--text-xs); color:var(--color-text-muted);" id="energyText"></span></div>
+      <hr class="card-divider" />
+      <div class="editor-shell">
+        <p class="section-label">Termin anlegen</p>
+        <form id="footballEventForm" class="football-grid">
+          <input class="field" name="title" placeholder="Training oder Spiel" required />
+          <input class="field" name="date" type="date" required />
+          <input class="field" name="time" type="time" required />
+          <select class="select" name="type"><option value="training">Training</option><option value="match">Spiel</option></select>
+          <button class="mini-btn green" type="submit">Speichern</button>
+        </form>
+      </div>
+      <div><p class="section-label">Nächstes Event</p><div class="match-highlight" id="nextFootballEvent"></div></div>
+      <hr class="card-divider" />
+      <div><p class="section-label">Trainings & Spiele</p><ul class="calendar-list" id="footballEventList" role="list"></ul></div>
+      <hr class="card-divider" />
+      <div>
+        <div class="card-header" style="margin-bottom:0"><p class="section-label">Kalender</p><div class="header-meta"><button class="icon-btn" id="prevMonthBtn" aria-label="Vorheriger Monat">←</button><button class="icon-btn" id="nextMonthBtn" aria-label="Nächster Monat">→</button></div></div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </section>
+    <section class="card card-wochenziele">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon purple">🎯</span><span class="card-title">Wochenziele</span></div><span class="card-badge" style="background:#ede9fe;color:#7c3aed;">KW 23</span></div>
+      <ul class="goal-list" role="list"><li class="goal-item"><span class="goal-num">1</span><div><p class="goal-text">Thesis-Kapitel 3 & 4 finalisieren</p><p class="goal-sub">Deadline: 10. Juni · 62 % erledigt</p></div></li><li class="goal-item"><span class="goal-num">2</span><div><p class="goal-text">Werkstunden-Soll erreichen (20 h)</p><p class="goal-sub">Noch 4 Stunden offen</p></div></li><li class="goal-item"><span class="goal-num">3</span><div><p class="goal-text">Beide Trainingseinheiten mitmachen</p><p class="goal-sub">Mit den Kalendereinträgen synchron prüfen</p></div></li></ul>
+    </section>
+    <section class="card card-statistik">
+      <div class="card-header"><div class="card-title-group"><span class="card-icon gray">📊</span><span class="card-title">Woche im Überblick</span></div><span class="card-badge badge-gray">KW 23</span></div>
+      <div class="kpi-row"><div class="kpi-box"><div class="kpi-value kpi-blue">18 h</div><div class="kpi-label">Lernzeit</div></div><div class="kpi-box"><div class="kpi-value kpi-gold">16 h</div><div class="kpi-label">Arbeitszeit</div></div><div class="kpi-box"><div class="kpi-value kpi-green">3 h</div><div class="kpi-label">Training</div></div></div>
+      <div class="chart-container"><canvas id="weekChart" aria-label="Wochenstatistik Balkendiagramm"></canvas></div>
+    </section>
+  </main>
+  <footer class="site-footer">Campus Career Kick — bearbeitbare Dashboard-Version · <span id="footerYear"></span></footer>
+</div>
+<script>
+const state = {
+  thesisProgress: 62,
+  energyLevel: 7,
+  tasks: {
+    today: [
+      { id: crypto.randomUUID(), title: 'Vorlesung Informationssysteme', time: '08:00', done: true },
+      { id: crypto.randomUUID(), title: 'Thesis-Kapitel 3 überarbeiten', time: '10:00', done: false },
+      { id: crypto.randomUUID(), title: 'Datarocket: Dashboard-Update', time: '13:00', done: false },
+      { id: crypto.randomUUID(), title: 'Fußballtraining', time: '18:30', done: false }
+    ],
+    job: [
+      { id: crypto.randomUUID(), title: 'Power BI Report Produktion', time: 'erledigt', done: true },
+      { id: crypto.randomUUID(), title: 'Datenpipeline Dokumentation', time: 'heute', done: false },
+      { id: crypto.randomUUID(), title: 'SharePoint-Migration prüfen', time: 'diese Woche', done: false }
+    ]
+  },
+  footballEvents: [
+    { id: crypto.randomUUID(), title: 'Abendtraining', type: 'training', date: '2026-06-09', time: '18:30' },
+    { id: crypto.randomUUID(), title: 'Regeneration & Passformen', type: 'training', date: '2026-06-11', time: '19:00' },
+    { id: crypto.randomUUID(), title: 'Osnabrück Titans vs. Hafen FC', type: 'match', date: '2026-06-14', time: '15:00' }
+  ],
+  currentCalendarDate: new Date('2026-06-01T12:00:00')
+};
+function formatHeaderDate(){const now=new Date();const opts={weekday:'short',day:'numeric',month:'short',year:'numeric'};document.getElementById('dateBadge').textContent=now.toLocaleDateString('de-DE',opts);document.getElementById('footerYear').textContent=now.getFullYear();}
+function initTheme(){const toggle=document.querySelector('[data-theme-toggle]');const root=document.documentElement;let current=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';root.setAttribute('data-theme',current);updateThemeIcon(current);toggle.addEventListener('click',()=>{current=current==='dark'?'light':'dark';root.setAttribute('data-theme',current);toggle.setAttribute('aria-label',`${current==='dark'?'Light':'Dark'} Mode aktivieren`);updateThemeIcon(current);updateChartTheme(current);});}
+function updateThemeIcon(theme){document.querySelector('[data-theme-toggle]').innerHTML=theme==='dark'?`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;}
+function renderTaskList(key,listId,countId){const list=document.getElementById(listId);list.innerHTML='';state.tasks[key].forEach(task=>{const li=document.createElement('li');li.className=`task-item ${task.done?'done':''}`;li.dataset.id=task.id;li.innerHTML=`<div class="task-check" data-action="toggle"></div><span class="task-text">${escapeHtml(task.title)}</span><span class="task-time">${escapeHtml(task.time||'')}</span><button class="icon-btn" type="button" data-action="edit" aria-label="Aufgabe bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Aufgabe löschen">×</button>`;list.appendChild(li);});const total=state.tasks[key].length;const done=state.tasks[key].filter(t=>t.done).length;document.getElementById(countId).textContent=`${done}/${total} erledigt`;}
+function bindTaskList(listId,key,countId){document.getElementById(listId).addEventListener('click',(event)=>{const item=event.target.closest('.task-item');if(!item)return;const id=item.dataset.id;const task=state.tasks[key].find(t=>t.id===id);const action=event.target.dataset.action;if(action==='toggle'){task.done=!task.done;} else if(action==='delete'){state.tasks[key]=state.tasks[key].filter(t=>t.id!==id);} else if(action==='edit'){const title=prompt('Aufgabe bearbeiten',task.title);if(title===null)return;const time=prompt('Zeit bearbeiten',task.time||'');task.title=title.trim()||task.title;task.time=time===null?task.time:time.trim();} else {return;} renderTaskList(key,listId,countId);});}
+function bindTaskForm(formId,key,listId,countId){document.getElementById(formId).addEventListener('submit',(event)=>{event.preventDefault();const fd=new FormData(event.currentTarget);const title=(fd.get('title')||'').toString().trim();const time=(fd.get('time')||'').toString().trim();if(!title)return;state.tasks[key].push({id:crypto.randomUUID(),title,time,done:false});event.currentTarget.reset();renderTaskList(key,listId,countId);});}
+function renderEnergy(){const dots=document.getElementById('energyDots');dots.innerHTML='';for(let i=1;i<=10;i++){const dot=document.createElement('div');dot.className=`energy-dot ${i<=state.energyLevel?'active':''}`;dots.appendChild(dot);}document.getElementById('energyText').textContent=`${state.energyLevel} / 10 — Bereit fürs Training`;}
+function footballTimestamp(ev){return new Date(`${ev.date}T${ev.time||'00:00'}`).getTime();}
+function getSortedFootballEvents(){return [...state.footballEvents].sort((a,b)=>footballTimestamp(a)-footballTimestamp(b));}
+function formatEventDate(date,time){const d=new Date(`${date}T${time||'00:00'}`);return d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})+' · '+(time||'--:--')+' Uhr';}
+function renderFootballSummary(){const next=getSortedFootballEvents().find(ev=>footballTimestamp(ev)>=new Date().setHours(0,0,0,0)) || getSortedFootballEvents()[0];const target=document.getElementById('nextFootballEvent');if(!next){target.innerHTML='<div><div class="match-vs">Noch kein Termin eingetragen</div><div class="match-date">Lege unten ein Training oder Spiel an.</div></div>';return;}target.innerHTML=`<span style="font-size:1.5rem;">${next.type==='match'?'🏟️':'⚽'}</span><div><div class="match-vs">${escapeHtml(next.title)}</div><div class="match-date">${formatEventDate(next.date,next.time)}</div></div>`;document.getElementById('footballBadge').textContent=`${state.footballEvents.length} Termine`;}
+function renderFootballList(){const list=document.getElementById('footballEventList');list.innerHTML='';getSortedFootballEvents().forEach(ev=>{const li=document.createElement('li');li.className='calendar-item';li.dataset.id=ev.id;li.innerHTML=`<div class="calendar-main"><strong>${escapeHtml(ev.title)}</strong><div class="calendar-meta">${ev.type==='match'?'Spiel':'Training'} · ${formatEventDate(ev.date,ev.time)}</div></div><button class="icon-btn" type="button" data-action="edit" aria-label="Termin bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Termin löschen">×</button>`;list.appendChild(li);});}
+function bindFootballForm(){document.getElementById('footballEventForm').addEventListener('submit',(event)=>{event.preventDefault();const fd=new FormData(event.currentTarget);state.footballEvents.push({id:crypto.randomUUID(),title:fd.get('title').toString().trim(),date:fd.get('date').toString(),time:fd.get('time').toString(),type:fd.get('type').toString()});event.currentTarget.reset();rerenderFootball();});document.getElementById('footballEventList').addEventListener('click',(event)=>{const item=event.target.closest('.calendar-item');if(!item)return;const ev=state.footballEvents.find(entry=>entry.id===item.dataset.id);const action=event.target.dataset.action;if(action==='delete'){state.footballEvents=state.footballEvents.filter(entry=>entry.id!==ev.id);} else if(action==='edit'){const title=prompt('Titel bearbeiten',ev.title);if(title===null)return;const date=prompt('Datum (YYYY-MM-DD)',ev.date);if(date===null)return;const time=prompt('Uhrzeit (HH:MM)',ev.time);if(time===null)return;const type=prompt('Typ: training oder match',ev.type);ev.title=title.trim()||ev.title;ev.date=date.trim()||ev.date;ev.time=time.trim()||ev.time;ev.type=(type.trim()==='match'?'match':'training');} else {return;}rerenderFootball();});}
+function rerenderFootball(){renderFootballSummary();renderFootballList();renderCalendar();}
+function renderCalendar(){const grid=document.getElementById('calendarGrid');grid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(label=>{const head=document.createElement('div');head.className='calendar-dayhead';head.textContent=label;grid.appendChild(head);});const current=state.currentCalendarDate;document.getElementById('footballMonthLabel').textContent=current.toLocaleDateString('de-DE',{month:'long',year:'numeric'});const month=current.getMonth();const year=current.getFullYear();const first=new Date(year,month,1);const firstWeekday=(first.getDay()+6)%7;const start=new Date(year,month,1-firstWeekday);for(let i=0;i<42;i++){const cellDate=new Date(start);cellDate.setDate(start.getDate()+i);const iso=cellDate.toISOString().slice(0,10);const events=getSortedFootballEvents().filter(ev=>ev.date===iso);const cell=document.createElement('div');cell.className=`calendar-cell ${cellDate.getMonth()!==month?'is-outside':''} ${events.length?'has-event':''}`;cell.innerHTML=`<div class="calendar-daynum">${cellDate.getDate()}</div>`;events.slice(0,2).forEach(ev=>{const pill=document.createElement('span');pill.className=`calendar-pill ${ev.type}`;pill.textContent=(ev.type==='match'?'Spiel':'Training')+' · '+ev.time;cell.appendChild(pill);});grid.appendChild(cell);} }
+function bindCalendarNav(){document.getElementById('prevMonthBtn').addEventListener('click',()=>{state.currentCalendarDate=new Date(state.currentCalendarDate.getFullYear(),state.currentCalendarDate.getMonth()-1,1);renderCalendar();});document.getElementById('nextMonthBtn').addEventListener('click',()=>{state.currentCalendarDate=new Date(state.currentCalendarDate.getFullYear(),state.currentCalendarDate.getMonth()+1,1);renderCalendar();});}
+function escapeHtml(text){return String(text).replace(/[&<>"']/g,(m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+function getChartColors(theme){const isDark=theme==='dark';return{blue:isDark?'#60a5fa':'#2563eb',gold:isDark?'#fbbf24':'#d97706',green:isDark?'#4ade80':'#16a34a',text:isDark?'#8892a4':'#6b7280',grid:isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)'};}
+function buildChart(theme){const ctx=document.getElementById('weekChart');if(!ctx)return;const c=getChartColors(theme);window.weekChartInstance=new Chart(ctx,{type:'bar',data:{labels:['Mo','Di','Mi','Do','Fr','Sa','So'],datasets:[{label:'Studium',data:[3,4,3,4,3,1,0],backgroundColor:c.blue,borderRadius:5,borderSkipped:false},{label:'Job',data:[4,4,4,4,0,0,0],backgroundColor:c.gold,borderRadius:5,borderSkipped:false},{label:'Training',data:[0,1.5,0,1.5,0,0,0],backgroundColor:c.green,borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:"'Satoshi',sans-serif",size:11},color:c.text,usePointStyle:true,boxHeight:8,padding:12}},tooltip:{backgroundColor:theme==='dark'?'#1c2235':'#ffffff',borderColor:theme==='dark'?'#252d40':'#e2e6ef',borderWidth:1,titleColor:theme==='dark'?'#e2e8f0':'#1a1f2e',bodyColor:c.text,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y} h`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:c.text},border:{display:false}},y:{stacked:true,grid:{color:c.grid},ticks:{color:c.text,callback:v=>v+' h'},border:{display:false},max:10}}}});}
+function updateChartTheme(theme){if(window.weekChartInstance)window.weekChartInstance.destroy();buildChart(theme);}
+function init(){formatHeaderDate();initTheme();renderTaskList('today','todayTaskList','todayTaskCount');const jobBadge=document.querySelector('.card-job .card-badge');jobBadge.id='jobTaskCount';renderTaskList('job','jobTaskList','jobTaskCount');bindTaskList('todayTaskList','today','todayTaskCount');bindTaskList('jobTaskList','job','jobTaskCount');bindTaskForm('todayTaskForm','today','todayTaskList','todayTaskCount');bindTaskForm('jobTaskForm','job','jobTaskList','jobTaskCount');renderEnergy();bindFootballForm();bindCalendarNav();rerenderFootball();document.getElementById('thesisPct').textContent=state.thesisProgress+'%';setTimeout(()=>{document.getElementById('thesisFill').style.width=state.thesisProgress+'%';},200);buildChart(document.documentElement.getAttribute('data-theme')||'light');}
+init();
+</script>
+</body>
+</html>
