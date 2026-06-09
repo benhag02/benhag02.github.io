@@ -1067,7 +1067,13 @@ function updateChartTheme(theme){if(window.weekChartInstance)window.weekChartIns
 // ══════════════════════════════════════════════
 const SUPA_URL = 'https://usbvxfhzwyuzxnezrqik.supabase.co';
 const SUPA_KEY = 'sb_publishable_zFoeTOWshWgrwPuP_4WSVw_M_4o67Ga';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
 let currentUser = null;
 let saveTimer = null;
@@ -1190,11 +1196,25 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 
 // ── Auth-Status beim Start prüfen + Session-Wechsel hören ──
 async function initSupabase(){
+  const hasAuthHash =
+    window.location.hash.includes('access_token') ||
+    window.location.hash.includes('refresh_token') ||
+    window.location.hash.includes('type=');
+
+  if (hasAuthHash) {
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+
   const { data: { session } } = await supa.auth.getSession();
+
   if(session?.user){
     showApp(session.user);
     await loadFromSupabase();
     renderAll();
+
+    if (hasAuthHash) {
+      history.replaceState(null, '', window.location.pathname);
+    }
   } else {
     showAuth();
     renderAll();
@@ -1205,6 +1225,7 @@ async function initSupabase(){
       showApp(session.user);
       await loadFromSupabase();
       renderAll();
+      history.replaceState(null, '', window.location.pathname);
     } else if(event === 'SIGNED_OUT'){
       showAuth();
     }
