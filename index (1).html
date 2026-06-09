@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Career Kick</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+  <style>
+    :root,[data-theme="light"]{--color-bg:#f4f6fb;--color-surface:#fff;--color-surface-2:#f9fafc;--color-surface-3:#eef2ff;--color-border:#e2e6ef;--color-divider:#eaecf3;--color-text:#1a1f2e;--color-text-muted:#6b7280;--color-text-faint:#a5afc3;--color-blue:#2563eb;--color-blue-light:#dbeafe;--color-blue-mid:#93c5fd;--color-green:#16a34a;--color-green-light:#dcfce7;--color-gold:#d97706;--color-gold-light:#fef3c7;--color-purple:#7c3aed;--color-purple-light:#ede9fe;--color-red:#dc2626;--shadow-sm:0 1px 3px rgba(30,41,59,.07);--shadow-md:0 8px 24px rgba(30,41,59,.10);--radius-sm:.75rem;--radius-md:1rem;--radius-lg:1.25rem;--radius-full:999px;--space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--text-xs:clamp(.75rem,.7rem + .25vw,.875rem);--text-sm:clamp(.875rem,.8rem + .35vw,1rem);--text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.2rem);--font-display:'Cabinet Grotesk','Helvetica Neue',sans-serif;--font-body:'Satoshi','Inter',sans-serif;--transition:180ms cubic-bezier(.16,1,.3,1)}
+    [data-theme="dark"]{--color-bg:#0f1117;--color-surface:#161b27;--color-surface-2:#1c2235;--color-surface-3:#1d2d4f;--color-border:#252d40;--color-divider:#1e2539;--color-text:#e2e8f0;--color-text-muted:#94a3b8;--color-text-faint:#64748b;--color-blue:#60a5fa;--color-blue-light:#1e3a5f;--color-blue-mid:#3b82f6;--color-green:#4ade80;--color-green-light:#163d28;--color-gold:#fbbf24;--color-gold-light:#4b3309;--color-purple:#a78bfa;--color-purple-light:#2b1d52;--color-red:#f87171;--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 8px 24px rgba(0,0,0,.45)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0} html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth} body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.55}
+    button,input,select,textarea{font:inherit;color:inherit} button{cursor:pointer;background:none;border:none} ul{list-style:none}
+    .page{max-width:1320px;margin:0 auto;padding:var(--space-6) var(--space-5)} .site-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-8);flex-wrap:wrap}
+    .header-brand,.card-title-group,.header-meta,.header-actions,.metric-row,.goal-meta,.inline-actions{display:flex;align-items:center;gap:var(--space-3)} .brand-logo{width:44px;height:44px;flex-shrink:0}.header-text h1{font-family:var(--font-display);font-size:var(--text-xl);font-weight:800;letter-spacing:-.02em;line-height:1.05}.header-text p{font-size:var(--text-sm);color:var(--color-text-muted);margin-top:.15rem}
+    .date-badge,.pill{font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:var(--space-1) var(--space-3)}
+    .theme-toggle,.mini-btn,.icon-btn,.ghost-btn{border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted);transition:all var(--transition)} .theme-toggle,.icon-btn{display:flex;align-items:center;justify-content:center}
+    .theme-toggle{width:38px;height:38px;border-radius:var(--radius-full)} .icon-btn{width:34px;height:34px;border-radius:var(--radius-full)} .mini-btn,.ghost-btn{padding:.72rem .95rem;border-radius:.9rem;font-weight:600}
+    .mini-btn.primary{background:var(--color-blue);color:#fff;border-color:var(--color-blue)} .mini-btn.gold{background:var(--color-gold);color:#fff;border-color:var(--color-gold)} .mini-btn.purple{background:var(--color-purple);color:#fff;border-color:var(--color-purple)} .ghost-btn{background:transparent}
+    .theme-toggle:hover,.mini-btn:hover,.icon-btn:hover,.ghost-btn:hover{background:var(--color-surface-2);color:var(--color-text)}
+    .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-5)} .card-heute,.card-studium,.card-job{grid-column:span 4}.card-calendar{grid-column:span 7}.card-wochenziele{grid-column:span 5}.card-statistik{grid-column:span 12}
+    @media (max-width:1020px){.card-heute,.card-studium,.card-job,.card-calendar,.card-wochenziele,.card-statistik{grid-column:span 6}} @media (max-width:700px){.page{padding:var(--space-5) var(--space-4)}.bento{grid-template-columns:1fr}.card-heute,.card-studium,.card-job,.card-calendar,.card-wochenziele,.card-statistik{grid-column:span 1}}
+    .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);box-shadow:var(--shadow-sm)} .card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-3)}
+    .card-icon{width:34px;height:34px;border-radius:.9rem;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}.card-icon.gray{background:var(--color-surface-2);color:var(--color-text-muted)}.card-icon.blue{background:var(--color-blue-light);color:var(--color-blue)}.card-icon.gold{background:var(--color-gold-light);color:var(--color-gold)}.card-icon.green{background:var(--color-green-light);color:var(--color-green)}.card-icon.purple{background:var(--color-purple-light);color:var(--color-purple)}
+    .card-title{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;letter-spacing:-.01em}.card-subtitle{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:.1rem}.card-badge{font-size:var(--text-xs);font-weight:700;border-radius:var(--radius-full);padding:4px 10px}.badge-gray{background:var(--color-surface-2);color:var(--color-text-muted)}.badge-blue{background:var(--color-blue-light);color:var(--color-blue)}.badge-gold{background:var(--color-gold-light);color:var(--color-gold)}.badge-green{background:var(--color-green-light);color:var(--color-green)}.badge-purple{background:var(--color-purple-light);color:var(--color-purple)}
+    .section-label{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-faint)} .card-divider{height:1px;background:var(--color-divider);border:none}
+    .task-list,.deadline-list,.event-list,.goal-list{display:flex;flex-direction:column;gap:var(--space-2)} .task-item,.event-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-surface-2);border:1px solid transparent}.task-item:hover,.event-item:hover,.goal-card:hover{border-color:var(--color-border)}
+    .task-check{width:18px;height:18px;border-radius:6px;border:2px solid var(--color-border);display:flex;align-items:center;justify-content:center;flex-shrink:0}.task-item.done .task-check{background:var(--color-blue);border-color:var(--color-blue)}.task-item.done .task-check::after{content:'';width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block}
+    .task-main,.event-main{flex:1;min-width:0}.task-text,.event-title{font-size:var(--text-sm);font-weight:600}.task-item.done .task-text{text-decoration:line-through;color:var(--color-text-muted)}.event-meta,.muted{font-size:var(--text-xs);color:var(--color-text-muted)}
+    /* Kategorie-Chips in der Tagesaufgaben-Liste */
+    .task-cat-chip{display:inline-block;font-size:10px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:4px;vertical-align:middle}
+    .task-cat-chip.uni{background:var(--color-blue-light);color:var(--color-blue)}
+    .task-cat-chip.arbeit{background:var(--color-gold-light);color:var(--color-gold)}
+    .task-cat-chip.freizeit{background:var(--color-green-light);color:var(--color-green)}
+    /* Kategorie-Trennlinie */
+    .task-category-header{font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-faint);padding:var(--space-1) 0;margin-top:var(--space-2)}
+    .toggle-form{display:none}.toggle-form.is-open{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+    .editor-grid,.event-grid,.hours-grid,.goal-grid{display:grid;gap:var(--space-3)}
+    /* Credits: Zahl + Button nebeneinander */
+    .editor-grid{grid-template-columns:1fr auto}
+    /* Tagesaufgabe / Deadline hinzufügen / Wochenziel: Vollbreite gestapelt */
+    .form-stack{display:flex;flex-direction:column;gap:var(--space-3)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+    .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-3)}
+    .form-actions{display:flex;justify-content:flex-end;gap:var(--space-2)}
+    /* Kalender Termin: 2 Zeilen */
+    .event-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+    .event-grid .field-full{grid-column:1/-1}
+    @media(max-width:860px){.form-row,.form-row-3,.event-grid{grid-template-columns:1fr}.event-grid .field-full{grid-column:1}}
+    /* Job-Editor: 2 Zeilen */
+    .job-hours-grid-row1{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)}
+    .job-hours-grid-row2{display:grid;grid-template-columns:1fr 1fr auto;gap:var(--space-2);align-items:end}
+    .job-overtime-note{font-size:var(--text-xs);color:var(--color-text-muted);grid-column:1/-1}
+    @media(max-width:860px){.job-hours-grid-row1,.job-hours-grid-row2{grid-template-columns:1fr}}
+    .field,.select{width:100%;padding:.78rem .88rem;border-radius:.9rem;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text)}
+    .metric-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3)} @media (max-width:700px){.metric-panel{grid-template-columns:repeat(2,1fr)}} .metric-box{padding:var(--space-3);background:linear-gradient(180deg,var(--color-surface-2),var(--color-surface));border:1px solid var(--color-border);border-radius:var(--radius-md);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:96px} .metric-value{font-family:var(--font-display);font-size:var(--text-lg);font-weight:800;letter-spacing:-.02em}.metric-label{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .metric-box.overtime-positive .metric-value{color:var(--color-gold)}
+    .progress-block{display:flex;flex-direction:column;gap:var(--space-2)} .progress-label-row{display:flex;justify-content:space-between;align-items:baseline;gap:var(--space-2)} .progress-bar-track{height:9px;border-radius:999px;background:var(--color-blue-light);overflow:hidden}.progress-bar-fill{height:100%;background:var(--color-blue);border-radius:999px;transition:width .8s cubic-bezier(.16,1,.3,1)}
+    .deadline-item{display:flex;justify-content:space-between;align-items:center;padding:var(--space-2) var(--space-3);background:var(--color-surface-2);border-radius:var(--radius-md);border-left:3px solid var(--color-blue)}.deadline-item.warn{border-left-color:var(--color-gold)}.deadline-item.urgent{border-left-color:var(--color-red)}
+    .calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.calendar-dayhead{font-size:11px;color:var(--color-text-faint);text-align:center;padding-bottom:4px}.calendar-cell{min-height:88px;border-radius:1rem;border:1px solid var(--color-border);background:var(--color-surface-2);padding:8px;display:flex;flex-direction:column;gap:5px}.calendar-cell.is-outside{opacity:.45}.calendar-cell.has-event{border-color:var(--color-blue-mid)}.calendar-cell.has-deadline{border-color:#f87171;background:#fff5f5}[data-theme="dark"] .calendar-cell.has-deadline{background:#2a1111}.calendar-daynum{font-size:12px;font-weight:700;color:var(--color-text-muted)}.calendar-pill{font-size:10px;line-height:1.15;padding:3px 6px;border-radius:999px;display:inline-flex;align-self:flex-start}.calendar-pill.uni{background:var(--color-blue-light);color:var(--color-blue)}.calendar-pill.work{background:var(--color-gold-light);color:var(--color-gold)}.calendar-pill.sport{background:var(--color-green-light);color:var(--color-green)}.calendar-pill.private{background:var(--color-purple-light);color:var(--color-purple)}.calendar-pill.deadline{background:#fee2e2;color:#b91c1c;font-weight:700}
+    .next-event{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:linear-gradient(180deg,var(--color-surface-3),var(--color-surface-2));border:1px solid var(--color-border);border-radius:var(--radius-md)}.next-event-icon{width:44px;height:44px;border-radius:14px;background:var(--color-surface);display:flex;align-items:center;justify-content:center;font-size:1.2rem;border:1px solid var(--color-border)}
+    .goal-stack{display:grid;gap:var(--space-3)} .goal-card,.day-event-card{padding:var(--space-4);border-radius:1rem;border:1px solid var(--color-border);background:linear-gradient(180deg,var(--color-surface),var(--color-surface-2));display:grid;grid-template-columns:auto 1fr auto;gap:var(--space-3);align-items:start;transition:border-color var(--transition),transform var(--transition)} .goal-card:hover,.day-event-card:hover{transform:translateY(-1px)} .goal-index{width:34px;height:34px;border-radius:12px;background:var(--color-purple-light);color:var(--color-purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--text-sm)} .goal-title{font-size:var(--text-sm);font-weight:700}.goal-sub{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px} .goal-actions{display:flex;gap:var(--space-2)} .selected-day-panel{display:none;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md)} .selected-day-panel.is-open{display:flex}
+    .edit-panel{display:none;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:linear-gradient(180deg,var(--color-surface-2),var(--color-surface));border:1px solid var(--color-border);border-radius:var(--radius-md)}.edit-panel.is-open{display:flex}.edit-panel-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}.edit-panel-title{font-size:var(--text-sm);font-weight:700}.edit-close{width:32px;height:32px;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted)}.chart-container{position:relative;height:210px}.site-footer{text-align:center;padding:var(--space-8) 0 var(--space-4);font-size:var(--text-xs);color:var(--color-text-faint)}
+
+    /* ── AUTH OVERLAY ── */
+    .auth-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--color-bg)}
+    .auth-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-8);max-width:380px;width:90%;display:flex;flex-direction:column;gap:var(--space-5);box-shadow:var(--shadow-md);text-align:center}
+    .auth-logo{width:56px;height:56px;margin:0 auto}
+    .auth-title{font-family:var(--font-display);font-size:var(--text-lg);font-weight:800}
+    .auth-sub{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .auth-form{display:flex;flex-direction:column;gap:var(--space-3)}
+    .auth-msg{font-size:var(--text-sm);color:var(--color-green);display:none}
+    .auth-msg.visible{display:block}
+    .auth-err{font-size:var(--text-sm);color:var(--color-red);display:none}
+    .auth-err.visible{display:block}
+    .user-bar{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--color-green);flex-shrink:0}
+    .sync-dot.saving{background:var(--color-gold);animation:pulse .8s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  </style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <svg class="auth-logo" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="44" height="44" rx="12" fill="#2563eb"/>
+      <path d="M14 15 C14 13 16 12 18 12 L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M14 15 L14 29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M14 29 C14 31 16 32 18 32 L22 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="25" y1="12" x2="25" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="auth-title">Campus Career Kick</div>
+      <div class="auth-sub">Melde dich an, um deine Daten geräteübergreifend zu speichern.</div>
+    </div>
+    <form class="auth-form" id="authForm">
+      <input class="field" type="email" id="authEmail" placeholder="deine@email.de" required autocomplete="email" />
+      <button class="mini-btn primary" type="submit" id="authBtn">Magic Link senden</button>
+    </form>
+    <div class="auth-msg" id="authMsg">✉️ Link gesendet! Schau in dein Postfach und klicke den Link.</div>
+    <div class="auth-err" id="authErr"></div>
+  </div>
+</div>
+<div class="page">
+  <header class="site-header">
+    <div class="header-brand">
+      <svg class="brand-logo" viewBox="0 0 44 44" fill="none" aria-label="Campus Career Kick Logo" xmlns="http://www.w3.org/2000/svg">
+        <rect width="44" height="44" rx="12" fill="#2563eb"/>
+        <path d="M14 15 C14 13 16 12 18 12 L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 15 L14 29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 29 C14 31 16 32 18 32 L22 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="12" x2="25" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="header-text">
+        <h1>Campus Career Kick</h1>
+        <p>Bearbeitbares Dashboard für Uni, Job, Ziele und alle Termine an einem Ort.</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="date-badge" id="dateBadge"></div>
+      <button class="theme-toggle" data-theme-toggle aria-label="Dark Mode aktivieren"></button>
+    </div>
+  </header>
+
+  <main class="bento">
+
+    <!-- ── HEUTE (Tagesaufgaben mit Kategorien) ── -->
+    <section class="card card-heute">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon gray">📌</span><div><div class="card-title">Heute</div><p class="card-subtitle">Tagesaufgaben</p></div></div>
+        <div class="header-actions"><span class="card-badge badge-gray" id="todayTaskCount"></span><button class="icon-btn" data-toggle-form="todayTaskFormWrap" aria-label="Aufgabe hinzufügen">＋</button></div>
+      </div>
+      <div class="toggle-form" id="todayTaskFormWrap">
+        <p class="section-label">Neue Aufgabe</p>
+        <form id="todayTaskForm" class="form-stack">
+          <input class="field" name="title" placeholder="Was steht heute an?" required />
+          <div class="form-row">
+            <select class="select" name="category">
+              <option value="uni">🎓 Uni</option>
+              <option value="arbeit">💼 Arbeit</option>
+              <option value="freizeit">🏖️ Freizeit</option>
+            </select>
+            <button class="mini-btn primary" type="submit">Hinzufügen</button>
+          </div>
+        </form>
+      </div>
+      <!-- Editor für Tagesaufgaben (inline, eigene Karte) -->
+      <div class="edit-panel" id="taskEditor">
+        <div class="edit-panel-head">
+          <div class="edit-panel-title">Aufgabe bearbeiten</div>
+          <button class="edit-close" type="button" data-close-panel="taskEditor">×</button>
+        </div>
+        <form id="taskEditForm" class="form-stack">
+          <input class="field" name="title" placeholder="Aufgabe beschreiben" required />
+          <div class="form-row">
+            <select class="select" name="category">
+              <option value="uni">🎓 Uni</option>
+              <option value="arbeit">💼 Arbeit</option>
+              <option value="freizeit">🏖️ Freizeit</option>
+            </select>
+            <button class="mini-btn primary" type="submit">Speichern</button>
+          </div>
+        </form>
+      </div>
+      <!-- Kategorisierte Liste wird per JS gerendert -->
+      <div id="todayTaskList"></div>
+    </section>
+
+    <!-- ── STUDIUM ── -->
+    <section class="card card-studium">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon blue">🎓</span><div><div class="card-title">Studium</div><p class="card-subtitle">Leistungspunkte und Deadlines</p></div></div>
+        <div class="header-actions"><span class="card-badge badge-blue">2. Semester</span><button class="icon-btn" data-toggle-form="creditsFormWrap" aria-label="Credits bearbeiten">✎</button></div>
+      </div>
+      <div class="progress-block">
+        <div class="progress-label-row"><span class="section-label" style="margin-bottom:0">Master-Fortschritt</span><span class="muted" id="creditProgressText"></span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="creditFill" style="width:0%"></div></div>
+      </div>
+      <div class="toggle-form" id="creditsFormWrap">
+        <p class="section-label">Credits anpassen</p>
+        <form id="creditsForm" class="editor-grid">
+          <input class="field" type="number" min="0" max="120" name="earned" placeholder="Erreichte Credits" />
+          <button class="mini-btn primary" type="submit">Speichern</button>
+        </form>
+        <p class="muted">Gesamtcredits sind fest auf 120 gesetzt.</p>
+      </div>
+      <hr class="card-divider" />
+      <div class="card-header" style="margin-bottom:0"><p class="section-label" style="margin-bottom:0">Deadlines</p><button class="icon-btn" data-toggle-form="deadlineFormWrap" aria-label="Deadline hinzufügen">＋</button></div>
+      <div class="toggle-form" id="deadlineFormWrap">
+        <p class="section-label">Neue Deadline</p>
+        <form id="deadlineForm" class="form-stack">
+          <input class="field" name="title" placeholder="z.B. Hausarbeit abgeben" required />
+          <div class="form-row">
+            <input class="field" name="date" type="date" required />
+            <button class="mini-btn primary" type="submit">Hinzufügen</button>
+          </div>
+        </form>
+      </div>
+      <!-- Deadline-Editor -->
+      <div class="edit-panel" id="deadlineEditor">
+        <div class="edit-panel-head">
+          <div class="edit-panel-title">Deadline bearbeiten</div>
+          <button class="edit-close" type="button" data-close-panel="deadlineEditor">×</button>
+        </div>
+        <form id="deadlineEditForm" class="form-stack">
+          <input class="field" name="title" placeholder="Deadline Titel" required />
+          <div class="form-row">
+            <input class="field" name="date" type="date" required />
+            <button class="mini-btn primary" type="submit">Speichern</button>
+          </div>
+        </form>
+      </div>
+      <ul class="deadline-list" id="deadlineList" role="list"></ul>
+    </section>
+
+    <!-- ── WERKSTUDENTENJOB (ohne Aufgaben) ── -->
+    <section class="card card-job">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon gold">💼</span><div><div class="card-title">Werkstudentenjob</div><p class="card-subtitle">Stunden und Arbeitszeitkonto</p></div></div>
+        <span class="card-badge badge-gold" id="jobWeekBadge">10 h / Woche</span>
+      </div>
+      <div class="metric-panel">
+        <button class="metric-box" type="button" data-edit-job="doneHours"><div class="metric-value" id="jobDoneHours">0 h</div><div class="metric-label">Diese Woche</div></button>
+        <button class="metric-box" type="button" data-edit-job="targetHours"><div class="metric-value" id="jobTargetHours">0 h</div><div class="metric-label">Soll / Woche</div></button>
+        <div class="metric-box"><div class="metric-value" id="jobOpenHours">0 h</div><div class="metric-label">Noch offen</div></div>
+        <button class="metric-box" type="button" id="jobOvertimeBox" data-edit-job="overtime"><div class="metric-value" id="jobOvertimeHours">0 h</div><div class="metric-label">Arbeitszeitkonto</div></button>
+      </div>
+
+      <!-- Job-Editor mit auto + manuell Konto -->
+      <div class="edit-panel" id="jobInlineEditor">
+        <div class="edit-panel-head">
+          <div class="edit-panel-title">Werkstudentenjob bearbeiten</div>
+          <button class="edit-close" type="button" data-close-panel="jobInlineEditor">×</button>
+        </div>
+        <form id="jobInlineForm">
+          <div class="job-hours-grid-row1">
+            <div>
+              <p class="section-label" style="margin-bottom:.4rem">Erledigte Stunden</p>
+              <input class="field" type="number" step="0.5" min="0" name="doneHours" placeholder="z.B. 6" />
+            </div>
+            <div>
+              <p class="section-label" style="margin-bottom:.4rem">Sollstunden / Woche</p>
+              <input class="field" type="number" step="0.5" min="0" name="targetHours" placeholder="z.B. 10" />
+            </div>
+            <div>
+              <p class="section-label" style="margin-bottom:.4rem">Manueller Zusatz (h)</p>
+              <input class="field" type="number" step="0.5" name="manualAdd" placeholder="0" />
+            </div>
+          </div>
+          <p class="job-overtime-note" style="margin-top:.4rem">
+            Überstunden werden automatisch addiert, wenn Ist &gt; Soll. Mit <strong>Manueller Zusatz</strong> kann das Konto zusätzlich erhöht oder korrigiert werden.
+          </p>
+          <div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)">
+            <button class="mini-btn gold" type="submit">Speichern</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── KALENDER ── -->
+    <section class="card card-calendar">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon green">🗓️</span><div><div class="card-title">Kalender</div><p class="card-subtitle">Uni, Arbeit, Sport und private Termine</p></div></div>
+        <div class="header-actions"><span class="card-badge badge-green" id="eventCountBadge"></span><button class="icon-btn" data-toggle-form="eventFormWrap" aria-label="Termin anlegen">＋</button></div>
+      </div>
+      <div class="toggle-form" id="eventFormWrap">
+        <p class="section-label">Termin anlegen</p>
+        <form id="eventForm" class="form-stack">
+          <input class="field field-full" name="title" placeholder="Was findet statt?" required />
+          <div class="form-row">
+            <div><p class="section-label" style="margin-bottom:.35rem">Datum</p><input class="field" type="date" name="date" required /></div>
+            <div><p class="section-label" style="margin-bottom:.35rem">Kategorie</p><select class="select" name="category"><option value="uni">🎓 Uni</option><option value="work">💼 Arbeit</option><option value="sport">⚽ Sport</option><option value="private">🧍 Privat</option></select></div>
+          </div>
+          <div class="form-row">
+            <div><p class="section-label" style="margin-bottom:.35rem">Beginn</p><input class="field" type="time" name="startTime" required /></div>
+            <div><p class="section-label" style="margin-bottom:.35rem">Ende</p><input class="field" type="time" name="endTime" required /></div>
+          </div>
+          <div class="form-actions"><button class="mini-btn primary" type="submit">Speichern</button></div>
+        </form>
+      </div>
+      <div>
+        <p class="section-label">Nächster Termin</p>
+        <div class="next-event" id="nextEventBox"></div>
+        <div class="edit-panel" id="eventEditor">
+          <div class="edit-panel-head"><div class="edit-panel-title">Termin bearbeiten</div><button class="edit-close" type="button" data-close-panel="eventEditor">×</button></div>
+          <form id="eventEditForm" class="form-stack">
+            <input class="field" name="title" placeholder="Terminname" required />
+            <div class="form-row">
+              <div><p class="section-label" style="margin-bottom:.35rem">Datum</p><input class="field" type="date" name="date" required /></div>
+              <div><p class="section-label" style="margin-bottom:.35rem">Kategorie</p><select class="select" name="category"><option value="uni">🎓 Uni</option><option value="work">💼 Arbeit</option><option value="sport">⚽ Sport</option><option value="private">🧍 Privat</option></select></div>
+            </div>
+            <div class="form-row">
+              <div><p class="section-label" style="margin-bottom:.35rem">Beginn</p><input class="field" type="time" name="startTime" required /></div>
+              <div><p class="section-label" style="margin-bottom:.35rem">Ende</p><input class="field" type="time" name="endTime" required /></div>
+            </div>
+            <div class="form-actions"><button class="mini-btn primary" type="submit">Speichern</button></div>
+          </form>
+        </div>
+      </div>
+      <hr class="card-divider" />
+      <div class="calendar-toolbar">
+        <p class="section-label" style="margin-bottom:0">Monatsansicht</p>
+        <div class="header-actions"><button class="icon-btn" id="prevMonthBtn" aria-label="Vorheriger Monat">←</button><button class="icon-btn" id="nextMonthBtn" aria-label="Nächster Monat">→</button></div>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="selected-day-panel" id="selectedDayPanel">
+        <div class="edit-panel-head">
+          <div><div class="edit-panel-title" id="selectedDayTitle">Termine am Tag</div><div class="muted" id="selectedDaySubtitle"></div></div>
+          <button class="edit-close" type="button" data-close-panel="selectedDayPanel">×</button>
+        </div>
+        <div class="goal-stack" id="selectedDayEvents"></div>
+      </div>
+    </section>
+
+    <!-- ── WOCHENZIELE ── -->
+    <section class="card card-wochenziele">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon purple">🎯</span><div><div class="card-title">Wochenziele</div><p class="card-subtitle">Klarer, editierbar und visuell ruhiger</p></div></div>
+        <div class="header-actions"><span class="card-badge badge-purple">KW 23</span><button class="icon-btn" data-toggle-form="goalFormWrap" aria-label="Wochenziel hinzufügen">＋</button></div>
+      </div>
+      <div class="toggle-form" id="goalFormWrap">
+        <p class="section-label">Neues Ziel</p>
+        <form id="goalForm" class="form-stack">
+          <input class="field" name="title" placeholder="Was möchtest du diese Woche erreichen?" required />
+          <input class="field" name="subtitle" placeholder="Kurznotiz oder Teilziel (optional)" />
+          <div class="form-row">
+            <select class="select" name="category"><option value="uni">🎓 Uni</option><option value="arbeit">💼 Arbeit</option><option value="freizeit">🏖️ Freizeit</option></select>
+            <button class="mini-btn purple" type="submit">Anlegen</button>
+          </div>
+        </form>
+      </div>
+      <div class="edit-panel" id="goalEditor">
+        <div class="edit-panel-head"><div class="edit-panel-title">Wochenziel bearbeiten</div><button class="edit-close" type="button" data-close-panel="goalEditor">×</button></div>
+        <form id="goalEditForm" class="form-stack">
+          <input class="field" name="title" placeholder="Ziel" required />
+          <input class="field" name="subtitle" placeholder="Notiz oder Teilziel" />
+          <div class="form-row">
+            <select class="select" name="category"><option value="uni">🎓 Uni</option><option value="arbeit">💼 Arbeit</option><option value="freizeit">🏖️ Freizeit</option></select>
+            <button class="mini-btn purple" type="submit">Speichern</button>
+          </div>
+        </form>
+      </div>
+      <div id="goalList"></div>
+    </section>
+
+    <!-- ── STATISTIK ── -->
+    <section class="card card-statistik">
+      <div class="card-header">
+        <div class="card-title-group"><span class="card-icon gray">📊</span><div><div class="card-title">Woche im Überblick</div><p class="card-subtitle">Beispielhafte Verteilung für Studium, Arbeit und Sport</p></div></div>
+        <span class="card-badge badge-gray">Live-Ansicht</span>
+      </div>
+      <div class="chart-container"><canvas id="weekChart" aria-label="Wochenstatistik Balkendiagramm"></canvas></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">Campus Career Kick — überarbeitete bearbeitbare Version · <span id="footerYear"></span></footer>
+</div>
+
+<script>
+const state = {
+  editingTaskId: null,
+  editingTaskKey: null,
+  editingDeadlineId: null,
+  credits: { earned: 15, total: 120 },
+  job: { doneHours: 6, targetHours: 10, overtime: 14 },
+  deadlines: [
+    { id: crypto.randomUUID(), title: 'Seminararbeit KI', isoDate: '2026-06-10', date: '10. Jun', level: 'urgent' },
+    { id: crypto.randomUUID(), title: 'Case Study', isoDate: '2026-06-28', date: '28. Jun', level: 'warn' },
+    { id: crypto.randomUUID(), title: 'Klausur BWL', isoDate: '2026-07-15', date: '15. Jul', level: 'normal' }
+  ],
+  tasks: {
+    today: [
+      { id: crypto.randomUUID(), title: 'Vorlesung Informationssysteme', category: 'uni', done: true },
+      { id: crypto.randomUUID(), title: 'Foliensatz für Seminar nacharbeiten', category: 'uni', done: false },
+      { id: crypto.randomUUID(), title: 'Datarocket Bericht fertigstellen', category: 'arbeit', done: false },
+      { id: crypto.randomUUID(), title: 'Mails und Orga prüfen', category: 'freizeit', done: false }
+    ]
+  },
+  goals: [
+    { id: crypto.randomUUID(), title: 'Seminararbeit strukturieren', category: 'uni', subtitle: 'Einleitung und Forschungsfrage finalisieren' },
+    { id: crypto.randomUUID(), title: '10 Wochenstunden im Job erreichen', category: 'arbeit', subtitle: 'Stundenkonto sauber aktualisieren' },
+    { id: crypto.randomUUID(), title: 'Trainings- und Unisachen koordinieren', category: 'freizeit', subtitle: 'Kalender einmal komplett pflegen' }
+  ],
+  events: [
+    { id: crypto.randomUUID(), title: 'Vorlesung Business Intelligence', date: '2026-06-08', startTime: '10:15', endTime: '11:45', category: 'uni' },
+    { id: crypto.randomUUID(), title: 'Datarocket Schicht', date: '2026-06-09', startTime: '13:00', endTime: '17:00', category: 'work' },
+    { id: crypto.randomUUID(), title: 'Fußballtraining', date: '2026-06-09', startTime: '18:30', endTime: '20:00', category: 'sport' },
+    { id: crypto.randomUUID(), title: 'Treffen mit Kommilitonen', date: '2026-06-12', startTime: '16:00', endTime: '18:00', category: 'private' }
+  ],
+  currentCalendarDate: new Date('2026-06-01T12:00:00'),
+  editingGoalId: null,
+  editingEventId: null,
+  selectedCalendarDate: null
+};
+
+function escapeHtml(text){return String(text).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function formatHeaderDate(){const now=new Date();document.getElementById('dateBadge').textContent=now.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});document.getElementById('footerYear').textContent=now.getFullYear();}
+function initTheme(){const toggle=document.querySelector('[data-theme-toggle]');const root=document.documentElement;let current=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';root.setAttribute('data-theme',current);updateThemeIcon(current);toggle.addEventListener('click',()=>{current=current==='dark'?'light':'dark';root.setAttribute('data-theme',current);updateThemeIcon(current);updateChartTheme(current);});}
+function updateThemeIcon(theme){document.querySelector('[data-theme-toggle]').innerHTML=theme==='dark'?`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;}
+
+function bindToggleForms(){document.querySelectorAll('[data-toggle-form]').forEach(btn=>{btn.addEventListener('click',()=>{const target=document.getElementById(btn.dataset.toggleForm);target.classList.toggle('is-open');});});}
+
+// ── TAGESAUFGABEN – nach Kategorie gegliedert ──
+const CAT_ORDER = ['uni','arbeit','freizeit'];
+const CAT_LABELS = {uni:'Uni',arbeit:'Arbeit',freizeit:'Freizeit'};
+const CAT_ICONS = {uni:'🎓',arbeit:'💼',freizeit:'🏖️'};
+
+function taskCategoryLabel(category){return CAT_LABELS[category]||'Sonstiges';}
+
+function renderTaskList(key,listId,countId){
+  const wrap=document.getElementById(listId);
+  wrap.innerHTML='';
+  const tasks=state.tasks[key];
+  const total=tasks.length;
+  const done=tasks.filter(t=>t.done).length;
+  document.getElementById(countId).textContent=`${done}/${total} erledigt`;
+
+  // Gruppieren nach Kategorie
+  CAT_ORDER.forEach(cat=>{
+    const catTasks=tasks.filter(t=>t.category===cat);
+    if(!catTasks.length)return;
+
+    const header=document.createElement('div');
+    header.className='task-category-header';
+    header.textContent=`${CAT_ICONS[cat]} ${CAT_LABELS[cat]}`;
+    wrap.appendChild(header);
+
+    const ul=document.createElement('ul');
+    ul.className='task-list';
+    catTasks.forEach(task=>{
+      const li=document.createElement('li');
+      li.className=`task-item ${task.done?'done':''}`;
+      li.dataset.id=task.id;
+      li.innerHTML=`<div class="task-check" data-action="toggle"></div><div class="task-main"><div class="task-text">${escapeHtml(task.title)}</div></div><button class="icon-btn" type="button" data-action="edit" aria-label="Aufgabe bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Aufgabe löschen">×</button>`;
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+  });
+
+  // Sonstige Kategorien (falls jemand etwas eingibt das nicht passt)
+  const otherTasks=tasks.filter(t=>!CAT_ORDER.includes(t.category));
+  if(otherTasks.length){
+    const header=document.createElement('div');
+    header.className='task-category-header';
+    header.textContent='📋 Sonstige';
+    wrap.appendChild(header);
+    const ul=document.createElement('ul');
+    ul.className='task-list';
+    otherTasks.forEach(task=>{
+      const li=document.createElement('li');
+      li.className=`task-item ${task.done?'done':''}`;
+      li.dataset.id=task.id;
+      li.innerHTML=`<div class="task-check" data-action="toggle"></div><div class="task-main"><div class="task-text">${escapeHtml(task.title)}</div></div><button class="icon-btn" type="button" data-action="edit" aria-label="Aufgabe bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Aufgabe löschen">×</button>`;
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+  }
+}
+
+function bindTaskList(listId,key,countId){
+  document.getElementById(listId).addEventListener('click',event=>{
+    const item=event.target.closest('.task-item');
+    if(!item)return;
+    const task=state.tasks[key].find(t=>t.id===item.dataset.id);
+    if(!task)return;
+    const action=event.target.dataset.action||event.target.closest('[data-action]')?.dataset.action;
+    if(action==='toggle'){task.done=!task.done;renderTaskList(key,listId,countId);scheduleSave();return;}
+    if(action==='delete'){state.tasks[key]=state.tasks[key].filter(t=>t.id!==task.id);renderTaskList(key,listId,countId);return;}
+    if(action==='edit'){
+      state.editingTaskId=task.id;
+      state.editingTaskKey=key;
+      const form=document.getElementById('taskEditForm');
+      form.title.value=task.title;
+      form.category.value=task.category||'uni';
+      openPanel('taskEditor');
+    }
+  });
+}
+
+function bindTaskForm(formId,key,listId,countId,wrapId){
+  document.getElementById(formId).addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=(fd.get('title')||'').toString().trim();
+    if(!title)return;
+    state.tasks[key].push({id:crypto.randomUUID(),title,category:(fd.get('category')||'uni').toString(),done:false});
+    event.currentTarget.reset();
+    document.getElementById(wrapId).classList.remove('is-open');
+    renderTaskList(key,listId,countId);
+  });
+}
+
+// ── CREDITS ──
+function renderCredits(){const{earned,total}=state.credits;const pct=Math.max(0,Math.min(100,(earned/total)*100));document.getElementById('creditProgressText').textContent=`${earned} / ${total} Credits · ${pct.toFixed(0)} %`;document.getElementById('creditFill').style.width=pct+'%';}
+function bindCreditsForm(){document.getElementById('creditsForm').addEventListener('submit',event=>{event.preventDefault();const fd=new FormData(event.currentTarget);const earned=Number(fd.get('earned'));if(Number.isFinite(earned)&&earned>=0)state.credits.earned=Math.min(120,earned);state.credits.total=120;renderCredits();scheduleSave();document.getElementById('creditsFormWrap').classList.remove('is-open');event.currentTarget.reset();});}
+
+// ── JOB-METRIKEN mit auto-Überstunden ──
+function renderJobMetrics(){
+  const{doneHours,targetHours,overtime}=state.job;
+  const open=Math.max(0,targetHours-doneHours);
+  document.getElementById('jobDoneHours').textContent=`${doneHours} h`;
+  document.getElementById('jobTargetHours').textContent=`${targetHours} h`;
+  document.getElementById('jobOpenHours').textContent=`${open} h`;
+  document.getElementById('jobOvertimeHours').textContent=`${overtime} h`;
+  document.getElementById('jobWeekBadge').textContent=`${targetHours} h / Woche`;
+  // Konto goldfarbig wenn > 0
+  const box=document.getElementById('jobOvertimeBox');
+  box.classList.toggle('overtime-positive',overtime>0);
+}
+
+function openPanel(id){document.getElementById(id)?.classList.add('is-open');}
+function closePanel(id){document.getElementById(id)?.classList.remove('is-open');}
+function bindPanelCloseButtons(){document.querySelectorAll('[data-close-panel]').forEach(btn=>btn.addEventListener('click',()=>closePanel(btn.dataset.closePanel)));}
+
+function bindJobHoursInline(){
+  document.querySelectorAll('[data-edit-job]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const form=document.getElementById('jobInlineForm');
+      form.doneHours.value=state.job.doneHours;
+      form.targetHours.value=state.job.targetHours;
+      form.manualAdd.value=0;
+      openPanel('jobInlineEditor');
+    });
+  });
+
+  document.getElementById('jobInlineForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const newDone=Number(fd.get('doneHours'));
+    const newTarget=Number(fd.get('targetHours'));
+    const manualAdd=Number(fd.get('manualAdd'))||0;
+
+    let newOvertime=state.job.overtime;
+
+    if(Number.isFinite(newDone)&&newDone>=0) state.job.doneHours=newDone;
+    if(Number.isFinite(newTarget)&&newTarget>=0) state.job.targetHours=newTarget;
+
+    // Auto-Überstunden: wenn Ist > Soll → Differenz addieren
+    const ist=Number.isFinite(newDone)?newDone:state.job.doneHours;
+    const soll=Number.isFinite(newTarget)?newTarget:state.job.targetHours;
+    if(ist>soll){
+      const ueberstunden=Number((ist-soll).toFixed(1));
+      newOvertime=Number((newOvertime+ueberstunden).toFixed(1));
+    }
+
+    // Manueller Zusatz (kann auch negativ sein für Korrektur)
+    if(Number.isFinite(manualAdd)&&manualAdd!==0){
+      newOvertime=Number((newOvertime+manualAdd).toFixed(1));
+    }
+
+    state.job.overtime=Math.max(0,newOvertime);
+    renderJobMetrics();
+    scheduleSave();
+    closePanel('jobInlineEditor');
+  });
+}
+
+// ── EVENTS & KALENDER ──
+function eventTs(ev){return new Date(`${ev.date}T${ev.startTime||'00:00'}`).getTime();}
+function sortedEvents(){return [...state.events].sort((a,b)=>eventTs(a)-eventTs(b));}
+function categoryLabel(category){return({uni:'Uni',work:'Arbeit',sport:'Sport',private:'Privat',deadline:'Deadline'})[category]||'Termin';}
+function categoryIcon(category){return({uni:'🎓',work:'💼',sport:'⚽',private:'🧍',deadline:'🔴'})[category]||'🗓️';}
+function formatEventDate(date,startTime,endTime){const d=new Date(`${date}T${startTime}`);return d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})+' · '+startTime+'–'+endTime+' Uhr';}
+
+function renderNextEvent(){
+  const now=Date.now();
+  const items=getCalendarItems();
+  const next=items.find(ev=>eventTs(ev)>=now)||items[0];
+  const box=document.getElementById('nextEventBox');
+  if(!next){box.innerHTML='<div class="event-main"><div class="event-title">Noch kein Termin eingetragen</div><div class="event-meta">Lege oben den ersten Termin an.</div></div>';return;}
+  box.innerHTML=`<div class="next-event-icon">${categoryIcon(next.category)}</div><div class="event-main"><div class="event-title">${escapeHtml(next.title)}</div><div class="event-meta">${categoryLabel(next.category)} · ${formatEventDate(next.date,next.startTime,next.endTime)}</div></div>`;
+}
+
+function renderEventList(){
+  const upcoming=getCalendarItems();
+  document.getElementById('eventCountBadge').textContent=`${upcoming.length} Termine`;
+}
+
+// ── KALENDER: Deadlines automatisch ROT eintragen ──
+function getCalendarItems(){
+  // Deadlines als Kalendereinträge mit Kategorie "deadline"
+  const deadlineEvents=state.deadlines
+    .filter(dl=>dl.isoDate)
+    .map((dl,index)=>({
+      id:'deadline-'+index,
+      title:'⚠ '+dl.title,
+      date:dl.isoDate,
+      startTime:'00:00',
+      endTime:'23:59',
+      category:'deadline',
+      readonly:true
+    }));
+  return [...state.events,...deadlineEvents].sort((a,b)=>eventTs(a)-eventTs(b));
+}
+
+function renderCalendar(){
+  const grid=document.getElementById('calendarGrid');
+  grid.innerHTML='';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(label=>{
+    const h=document.createElement('div');
+    h.className='calendar-dayhead';
+    h.textContent=label;
+    grid.appendChild(h);
+  });
+  const current=state.currentCalendarDate;
+  const month=current.getMonth();
+  const year=current.getFullYear();
+  const first=new Date(year,month,1);
+  const firstWeekday=(first.getDay()+6)%7;
+  const start=new Date(year,month,1-firstWeekday);
+
+  for(let i=0;i<42;i++){
+    const cellDate=new Date(start);
+    cellDate.setDate(start.getDate()+i);
+    const iso=`${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+    const dayItems=getCalendarItems().filter(ev=>ev.date===iso);
+    const hasDeadline=dayItems.some(ev=>ev.category==='deadline');
+    const hasOtherEvent=dayItems.some(ev=>ev.category!=='deadline');
+
+    const cell=document.createElement('button');
+    cell.type='button';
+    cell.dataset.date=iso;
+    cell.className=[
+      'calendar-cell',
+      cellDate.getMonth()!==month?'is-outside':'',
+      hasOtherEvent?'has-event':'',
+      hasDeadline?'has-deadline':''
+    ].filter(Boolean).join(' ');
+
+    cell.innerHTML=`<div class="calendar-daynum">${cellDate.getDate()}</div>`;
+
+    // Deadlines zuerst anzeigen (rot), dann restliche Termine
+    const deadlineItems=dayItems.filter(ev=>ev.category==='deadline');
+    const otherItems=dayItems.filter(ev=>ev.category!=='deadline');
+
+    [...deadlineItems,...otherItems].slice(0,2).forEach(ev=>{
+      const pill=document.createElement('span');
+      pill.className=`calendar-pill ${ev.category}`;
+      pill.textContent=ev.category==='deadline'
+        ?`🔴 ${ev.title.replace('⚠ ','')}`
+        :`${categoryLabel(ev.category)} · ${ev.startTime}`;
+      cell.appendChild(pill);
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+function rerenderEvents(){renderNextEvent();renderEventList();renderCalendar();bindCalendarCells();renderSelectedDayEvents();updateChartIfReady();}
+function updateChartIfReady(){if(window.weekChartInstance){const{uni,work,sport}=calcWeekData();window.weekChartInstance.data.datasets[0].data=uni;window.weekChartInstance.data.datasets[1].data=work;window.weekChartInstance.data.datasets[2].data=sport;const maxRaw=Math.max(...uni.map((v,i)=>v+work[i]+sport[i]),4);window.weekChartInstance.options.scales.y.max=Math.ceil(maxRaw)+1;window.weekChartInstance.update();}}
+
+// Rundet Startzeit auf :00 und setzt Endzeit auf +1h
+function bindEventTimeLogic(formId){
+  const form=document.getElementById(formId);
+  if(!form)return;
+  const startInput=form.querySelector('[name="startTime"]');
+  const endInput=form.querySelector('[name="endTime"]');
+  if(!startInput||!endInput)return;
+
+  // Beim Fokussieren: Startwert :00 vorbelegen, falls noch leer
+  startInput.addEventListener('focus',()=>{
+    if(!startInput.value){
+      const now=new Date();
+      startInput.value=String(now.getHours()).padStart(2,'0')+':00';
+    }
+  });
+
+  // Nach Auswahl der Stunde: Minuten auf :00 setzen UND Endzeit auf +1h
+  // Nur wenn Endzeit noch nicht manuell geändert wurde
+  let endManuallyEdited=false;
+  endInput.addEventListener('input',()=>{ endManuallyEdited=true; });
+
+  startInput.addEventListener('change',()=>{
+    const val=startInput.value;
+    if(!val)return;
+    const[hStr,mStr]=val.split(':');
+    // Minuten auf :00 setzen (nur wenn Minuten noch 0 oder leer — = Startwert)
+    // Nutzer kann danach frei ändern, aber initialer Klick setzt :00
+    if(!mStr||mStr==='00'||mStr==='0'){
+      startInput.value=hStr.padStart(2,'0')+':00';
+    }
+    // Endzeit nur setzen wenn noch nicht manuell geändert
+    if(!endManuallyEdited||!endInput.value){
+      const hNum=parseInt(hStr,10);
+      const endH=Math.min(hNum+1,23);
+      endInput.value=String(endH).padStart(2,'0')+':00';
+    }
+  });
+
+  // Bei Öffnen eines Edit-Formulars: Status zurücksetzen
+  form.addEventListener('reset',()=>{ endManuallyEdited=false; });
+}
+
+function bindEventForm(){
+  bindEventTimeLogic('eventForm');
+  bindEventTimeLogic('eventEditForm');
+  document.getElementById('eventForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    if(!title)return;
+    state.events.push({id:crypto.randomUUID(),title,date:fd.get('date').toString(),startTime:fd.get('startTime').toString(),endTime:fd.get('endTime').toString(),category:fd.get('category').toString()});
+    state.selectedCalendarDate=fd.get('date').toString();
+    event.currentTarget.reset();
+    document.getElementById('eventFormWrap').classList.remove('is-open');
+    rerenderEvents();
+    scheduleSave();
+  });
+  document.getElementById('eventEditForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const ev=state.events.find(item=>item.id===state.editingEventId);
+    if(!ev)return;
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    if(!title)return;
+    ev.title=title;ev.date=fd.get('date').toString();ev.startTime=fd.get('startTime').toString();ev.endTime=fd.get('endTime').toString();ev.category=fd.get('category').toString();
+    state.selectedCalendarDate=ev.date;
+    closePanel('eventEditor');
+    rerenderEvents();
+    scheduleSave();
+  });
+}
+
+function bindCalendarNav(){
+  document.getElementById('prevMonthBtn').addEventListener('click',()=>{state.currentCalendarDate=new Date(state.currentCalendarDate.getFullYear(),state.currentCalendarDate.getMonth()-1,1);renderCalendar();bindCalendarCells();});
+  document.getElementById('nextMonthBtn').addEventListener('click',()=>{state.currentCalendarDate=new Date(state.currentCalendarDate.getFullYear(),state.currentCalendarDate.getMonth()+1,1);renderCalendar();bindCalendarCells();});
+}
+
+function renderSelectedDayEvents(){
+  const panel=document.getElementById('selectedDayPanel');
+  const list=document.getElementById('selectedDayEvents');
+  if(!state.selectedCalendarDate){panel.classList.remove('is-open');list.innerHTML='';return;}
+  const events=getCalendarItems().filter(ev=>ev.date===state.selectedCalendarDate);
+  document.getElementById('selectedDayTitle').textContent='Termine am ausgewählten Tag';
+  document.getElementById('selectedDaySubtitle').textContent=new Date(state.selectedCalendarDate+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  list.innerHTML='';
+  if(!events.length){panel.classList.add('is-open');list.innerHTML='<div class="muted">Keine Termine an diesem Tag.</div>';return;}
+  events.forEach((ev,index)=>{
+    const card=document.createElement('article');
+    card.className='day-event-card';
+    card.dataset.id=ev.id;
+    const isDeadline=ev.category==='deadline';
+    card.style.borderColor=isDeadline?'#f87171':'';
+    card.innerHTML=`<div class="goal-index" style="${isDeadline?'background:#fee2e2;color:#b91c1c;':''}">${isDeadline?'🔴':index+1}</div><div><div class="goal-title">${escapeHtml(ev.title)}</div><div class="goal-sub">${categoryLabel(ev.category)} · ${isDeadline?ev.date:''+formatEventDate(ev.date,ev.startTime,ev.endTime)}</div></div><div class="goal-actions">${isDeadline?'':` <button class="icon-btn" type="button" data-day-action="edit" aria-label="Termin bearbeiten">✎</button>`}<button class="icon-btn" type="button" data-day-action="delete" aria-label="${isDeadline?'Deadline':'Termin'} löschen">×</button></div>`;
+    list.appendChild(card);
+  });
+  panel.classList.add('is-open');
+}
+
+function bindSelectedDayEvents(){
+  document.getElementById('selectedDayEvents').addEventListener('click',event=>{
+    const btn=event.target.closest('[data-day-action]');
+    if(!btn)return;
+    const card=event.target.closest('.day-event-card');
+    if(!card)return;
+    const action=btn.dataset.dayAction;
+    const id=card.dataset.id;
+
+    // Deadline-Einträge haben id wie "deadline-0"
+    if(id.startsWith('deadline-')){
+      if(action==='delete'){
+        const idx=parseInt(id.replace('deadline-',''));
+        state.deadlines.splice(idx,1);
+        state.selectedCalendarDate=null;
+        renderDeadlines();
+        rerenderEvents();
+      }
+      return;
+    }
+
+    const ev=state.events.find(item=>item.id===id);
+    if(!ev)return;
+    if(action==='delete'){state.events=state.events.filter(item=>item.id!==ev.id);renderSelectedDayEvents();rerenderEvents();scheduleSave();return;}
+    if(action==='edit'{
+      state.editingEventId=ev.id;
+      const form=document.getElementById('eventEditForm');
+      form.title.value=ev.title;form.date.value=ev.date;form.startTime.value=ev.startTime;form.endTime.value=ev.endTime;form.category.value=ev.category;
+      openPanel('eventEditor');
+    }
+  });
+}
+
+function bindCalendarCells(){
+  document.querySelectorAll('.calendar-cell').forEach(cell=>{
+    cell.onclick=()=>{state.selectedCalendarDate=cell.dataset.date;renderSelectedDayEvents();};
+  });
+}
+
+// ── DEADLINES ──
+function renderDeadlines(){
+  const list=document.getElementById('deadlineList');
+  list.innerHTML='';
+  state.deadlines.forEach(dl=>{
+    const item=document.createElement('li');
+    item.className=`deadline-item ${dl.level==='urgent'?'urgent':dl.level==='warn'?'warn':''}`;
+    item.dataset.id=dl.id;
+    item.innerHTML=`<span>${escapeHtml(dl.title)}</span><div class="inline-actions"><span class="muted">${escapeHtml(dl.date)}</span><button class="icon-btn" type="button" data-action="edit" aria-label="Deadline bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Deadline löschen">×</button></div>`;
+    list.appendChild(item);
+  });
+}
+
+function bindDeadlineForm(){
+  document.getElementById('deadlineForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    const date=fd.get('date').toString().trim();
+    if(!title||!date)return;
+    const pretty=new Date(date+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
+    // Urgency automatisch bestimmen
+    const daysUntil=Math.ceil((new Date(date)-new Date())/(1000*60*60*24));
+    const level=daysUntil<=7?'urgent':daysUntil<=21?'warn':'normal';
+    state.deadlines.push({id:crypto.randomUUID(),title,date:pretty,isoDate:date,level});
+    event.currentTarget.reset();
+    document.getElementById('deadlineFormWrap').classList.remove('is-open');
+    renderDeadlines();
+    rerenderEvents();
+  });
+  document.getElementById('deadlineList').addEventListener('click',event=>{
+    const actionBtn=event.target.closest('[data-action]');
+    if(!actionBtn)return;
+    const item=event.target.closest('.deadline-item');
+    if(!item)return;
+    const deadline=state.deadlines.find(d=>d.id===item.dataset.id);
+    if(!deadline)return;
+    const action=actionBtn.dataset.action;
+    if(action==='delete'){
+      state.deadlines=state.deadlines.filter(d=>d.id!==deadline.id);
+      renderDeadlines();
+      rerenderEvents();
+    }else if(action==='edit'){
+      state.editingDeadlineId=deadline.id;
+      const form=document.getElementById('deadlineEditForm');
+      form.title.value=deadline.title;
+      form.date.value=deadline.isoDate||'';
+      openPanel('deadlineEditor');
+    }
+  });
+  document.getElementById('deadlineEditForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    const date=fd.get('date').toString().trim();
+    if(!title||!date)return;
+    const deadline=state.deadlines.find(d=>d.id===state.editingDeadlineId);
+    if(!deadline)return;
+    deadline.title=title;
+    deadline.isoDate=date;
+    deadline.date=new Date(date+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
+    const daysUntil=Math.ceil((new Date(date)-new Date())/(1000*60*60*24));
+    deadline.level=daysUntil<=7?'urgent':daysUntil<=21?'warn':'normal';
+    closePanel('deadlineEditor');
+    renderDeadlines();
+    rerenderEvents();
+    scheduleSave();
+  });
+}
+
+// ── WOCHENZIELE ──
+const GOAL_CAT_ORDER=['uni','arbeit','freizeit'];
+const GOAL_CAT_LABELS={uni:'Uni',arbeit:'Arbeit',freizeit:'Freizeit'};
+const GOAL_CAT_ICONS={uni:'🎓',arbeit:'💼',freizeit:'🏖️'};
+const GOAL_CAT_COLORS={uni:'var(--color-blue)',arbeit:'var(--color-gold)',freizeit:'var(--color-green)'};
+const GOAL_CAT_BG={uni:'var(--color-blue-light)',arbeit:'var(--color-gold-light)',freizeit:'var(--color-green-light)'};
+
+function renderGoals(){
+  const wrap=document.getElementById('goalList');
+  wrap.innerHTML='';
+
+  let globalIdx=0;
+  GOAL_CAT_ORDER.forEach(cat=>{
+    const catGoals=state.goals.filter(g=>g.category===cat);
+    if(!catGoals.length)return;
+    const header=document.createElement('div');
+    header.className='task-category-header';
+    header.textContent=`${GOAL_CAT_ICONS[cat]} ${GOAL_CAT_LABELS[cat]}`;
+    wrap.appendChild(header);
+    const stack=document.createElement('div');
+    stack.className='goal-stack';
+    catGoals.forEach(goal=>{
+      globalIdx++;
+      const el=document.createElement('article');
+      el.className='goal-card';
+      el.dataset.id=goal.id;
+      el.innerHTML=`<div class="goal-index" style="background:${GOAL_CAT_BG[cat]};color:${GOAL_CAT_COLORS[cat]}">${globalIdx}</div><div><div class="goal-title">${escapeHtml(goal.title)}</div><div class="goal-sub">${escapeHtml(goal.subtitle||'Keine Zusatznotiz')}</div></div><div class="goal-actions"><button class="icon-btn" type="button" data-action="edit" aria-label="Ziel bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Ziel löschen">×</button></div>`;
+      stack.appendChild(el);
+    });
+    wrap.appendChild(stack);
+  });
+
+  // Sonstige (unbekannte Kategorie)
+  const others=state.goals.filter(g=>!GOAL_CAT_ORDER.includes(g.category));
+  if(others.length){
+    const header=document.createElement('div');
+    header.className='task-category-header';
+    header.textContent='📋 Sonstige';
+    wrap.appendChild(header);
+    const stack=document.createElement('div');
+    stack.className='goal-stack';
+    others.forEach(goal=>{
+      globalIdx++;
+      const el=document.createElement('article');
+      el.className='goal-card';
+      el.dataset.id=goal.id;
+      el.innerHTML=`<div class="goal-index">${globalIdx}</div><div><div class="goal-title">${escapeHtml(goal.title)}</div><div class="goal-sub">${escapeHtml(goal.subtitle||'')}</div></div><div class="goal-actions"><button class="icon-btn" type="button" data-action="edit" aria-label="Ziel bearbeiten">✎</button><button class="icon-btn" type="button" data-action="delete" aria-label="Ziel löschen">×</button></div>`;
+      stack.appendChild(el);
+    });
+    wrap.appendChild(stack);
+  }
+}
+
+function bindTaskEditForm(){
+  document.getElementById('taskEditForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    if(!title)return;
+    const key=state.editingTaskKey;
+    const task=state.tasks[key].find(t=>t.id===state.editingTaskId);
+    if(!task)return;
+    task.title=title;
+    task.category=fd.get('category').toString();
+    closePanel('taskEditor');
+    renderTaskList(key,'todayTaskList','todayTaskCount');
+    scheduleSave();
+  });
+}
+
+function bindGoalForm(){
+  document.getElementById('goalForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    if(!title)return;
+    state.goals.push({id:crypto.randomUUID(),title,category:fd.get('category').toString(),subtitle:fd.get('subtitle').toString().trim()});
+    event.currentTarget.reset();
+    document.getElementById('goalFormWrap').classList.remove('is-open');
+    renderGoals();
+    scheduleSave();
+  });
+  document.getElementById('goalList'.addEventListener('click',event=>{
+    // Klicks kommen aus verschachtelten goal-stack Divs
+    event.stopPropagation();
+    const actionBtn=event.target.closest('[data-action]');
+    if(!actionBtn)return;
+    const card=event.target.closest('.goal-card');
+    if(!card)return;
+    const goal=state.goals.find(g=>g.id===card.dataset.id);
+    if(!goal)return;
+    const action=actionBtn.dataset.action;
+    if(action==='delete'){state.goals=state.goals.filter(g=>g.id!==goal.id);renderGoals();return;}
+    if(action==='edit'){
+      state.editingGoalId=goal.id;
+      const form=document.getElementById('goalEditForm');
+      form.title.value=goal.title;form.category.value=goal.category||'studium';form.subtitle.value=goal.subtitle||'';
+      document.querySelector('#goalEditor .edit-panel-title').textContent='Wochenziel bearbeiten';
+      form.dataset.mode='goal';
+      openPanel('goalEditor');
+    }
+  });
+  document.getElementById('goalEditForm').addEventListener('submit',event=>{
+    event.preventDefault();
+    const fd=new FormData(event.currentTarget);
+    const title=fd.get('title').toString().trim();
+    if(!title)return;
+    const mode=event.currentTarget.dataset.mode||'goal';
+    if(mode==='task'){
+      const key=event.currentTarget.dataset.taskKey;
+      const task=state.tasks[key].find(t=>t.id===state.editingGoalId);
+      if(!task)return;
+      task.title=title;
+      task.category=fd.get('category').toString();
+      closePanel('goalEditor');
+      renderTaskList(key,'todayTaskList','todayTaskCount');
+      event.currentTarget.dataset.mode='goal';
+      return;
+    }
+    const goal=state.goals.find(g=>g.id===state.editingGoalId);
+    if(!goal)return;
+    goal.title=title;goal.category=fd.get('category').toString();goal.subtitle=fd.get('subtitle').toString().trim();
+    closePanel('goalEditor');
+    renderGoals();
+    scheduleSave();
+  });
+}
+
+// ── CHART – live aus Kalender-Events ──
+function getChartColors(theme){const isDark=theme==='dark';return{blue:isDark?'#60a5fa':'#2563eb',gold:isDark?'#fbbf24':'#d97706',green:isDark?'#4ade80':'#16a34a',text:isDark?'#94a3b8':'#6b7280',grid:isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.06)'}; }
+
+// Dauer eines Events in Stunden (gerundet auf 0.1)
+function eventDurationH(ev){
+  const [sh,sm]=(ev.startTime||'00:00').split(':').map(Number);
+  const [eh,em]=(ev.endTime||'01:00').split(':').map(Number);
+  const diff=(eh*60+em)-(sh*60+sm);
+  return diff>0?Math.round(diff/6)/10:0;
+}
+
+// Summiert Stunden je Kategorie für Mo–So der aktuellen Woche
+function calcWeekData(){
+  const now=new Date();
+  const dayOfWeek=(now.getDay()+6)%7; // Mo=0 … So=6
+  const monday=new Date(now);
+  monday.setDate(now.getDate()-dayOfWeek);
+  monday.setHours(0,0,0,0);
+  const uni=Array(7).fill(0);
+  const work=Array(7).fill(0);
+  const sport=Array(7).fill(0);
+  state.events.forEach(ev=>{
+    const d=new Date(ev.date+'T12:00');
+    const idx=Math.floor((d-monday)/(1000*60*60*24));
+    if(idx<0||idx>6)return;
+    const h=eventDurationH(ev);
+    if(ev.category==='uni')uni[idx]+=h;
+    else if(ev.category==='work')work[idx]+=h;
+    else if(ev.category==='sport')sport[idx]+=h;
+  });
+  // auf 1 Dezimale runden
+  return{
+    uni:uni.map(v=>Math.round(v*10)/10),
+    work:work.map(v=>Math.round(v*10)/10),
+    sport:sport.map(v=>Math.round(v*10)/10)
+  };
+}
+
+function buildChart(theme){
+  const ctx=document.getElementById('weekChart');
+  if(!ctx)return;
+  const c=getChartColors(theme);
+  const{uni,work,sport}=calcWeekData();
+  const maxRaw=Math.max(...uni.map((v,i)=>v+work[i]+sport[i]),4);
+  const maxY=Math.ceil(maxRaw)+1;
+  window.weekChartInstance=new Chart(ctx,{type:'bar',data:{labels:['Mo','Di','Mi','Do','Fr','Sa','So'],datasets:[
+    {label:'Uni',data:uni,backgroundColor:c.blue,borderRadius:8,borderSkipped:false},
+    {label:'Arbeit',data:work,backgroundColor:c.gold,borderRadius:8,borderSkipped:false},
+    {label:'Sport',data:sport,backgroundColor:c.green,borderRadius:8,borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:"'Satoshi',sans-serif",size:11},color:c.text,usePointStyle:true,boxHeight:8,padding:14}},tooltip:{backgroundColor:theme==='dark'?'#1c2235':'#fff',borderColor:theme==='dark'?'#252d40':'#e2e6ef',borderWidth:1,titleColor:theme==='dark'?'#e2e8f0':'#1a1f2e',bodyColor:c.text,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y} h`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:c.text},border:{display:false}},y:{stacked:true,grid:{color:c.grid},ticks:{color:c.text,callback:v=>v+' h'},border:{display:false},max:maxY}}}});
+}
+function updateChartTheme(theme){if(window.weekChartInstance)window.weekChartInstance.destroy();buildChart(theme);}
+
+
+// ══════════════════════════════════════════════
+// SUPABASE – Persistenz & Auth
+// ══════════════════════════════════════════════
+const SUPA_URL = 'https://usbvxfhzwyuzxnezrqik.supabase.co';
+const SUPA_KEY = 'sb_publishable_zFoeTOWshWgrwPuP_4WSVw_M_4o67Ga';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+let saveTimer = null;
+
+// ── Sync-Dot ──
+function setSaving(active){
+  document.getElementById('syncDot')?.classList.toggle('saving', active);
+}
+
+// ── State komplett als ein JSON-Blob speichern ──
+const SAVE_KEY = 'cck_state';
+
+function stateToJson(){
+  return JSON.stringify({
+    credits: state.credits,
+    job: state.job,
+    deadlines: state.deadlines,
+    tasks: state.tasks,
+    goals: state.goals,
+    events: state.events
+  });
+}
+
+function applyStateJson(json){
+  if(!json) return;
+  try{
+    const s = typeof json === 'string' ? JSON.parse(json) : json;
+    if(s.credits) state.credits = s.credits;
+    if(s.job) state.job = s.job;
+    if(s.deadlines) state.deadlines = s.deadlines;
+    if(s.tasks) state.tasks = s.tasks;
+    if(s.goals) state.goals = s.goals;
+    if(s.events) state.events = s.events;
+  } catch(e){ console.warn('State parse error', e); }
+}
+
+// ── Daten in Supabase speichern (debounced) ──
+async function saveToSupabase(){
+  if(!currentUser) return;
+  setSaving(true);
+  const payload = { key: SAVE_KEY, value: JSON.parse(stateToJson()), user_id: currentUser.id };
+  await supa.from('settings').upsert(payload, { onConflict: 'key,user_id' });
+  setSaving(false);
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToSupabase, 800);
+}
+
+// ── Daten aus Supabase laden ──
+async function loadFromSupabase(){
+  if(!currentUser) return;
+  const { data, error } = await supa
+    .from('settings')
+    .select('value')
+    .eq('key', SAVE_KEY)
+    .eq('user_id', currentUser.id)
+    .single();
+  if(data?.value) applyStateJson(data.value);
+}
+
+// ── Auth: Overlay steuern ──
+function showApp(user){
+  currentUser = user;
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('userBar').style.display = 'flex';
+  document.getElementById('userEmail').textContent = user.email;
+}
+
+function showAuth(){
+  currentUser = null;
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.getElementById('userBar').style.display = 'none';
+}
+
+// ── Auth-Formular ──
+document.getElementById('authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const btn = document.getElementById('authBtn');
+  const msg = document.getElementById('authMsg');
+  const err = document.getElementById('authErr');
+  btn.textContent = 'Sende…';
+  btn.disabled = true;
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+  if(error){
+    err.textContent = 'Fehler: ' + error.message;
+    err.classList.add('visible');
+    btn.textContent = 'Magic Link senden';
+    btn.disabled = false;
+  } else {
+    msg.classList.add('visible');
+    btn.textContent = 'Link gesendet ✓';
+  }
+});
+
+// ── Logout ──
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await supa.auth.signOut();
+  showAuth();
+});
+
+// ── Auth-Status beim Start prüfen + Session-Wechsel hören ──
+async function initSupabase(){
+  const { data: { session } } = await supa.auth.getSession();
+  if(session?.user){
+    showApp(session.user);
+    await loadFromSupabase();
+    renderAll();
+  } else {
+    showAuth();
+    renderAll(); // zeigt Demo-Daten im Hintergrund
+  }
+
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if(session?.user){
+      showApp(session.user);
+      await loadFromSupabase();
+      renderAll();
+    } else {
+      showAuth();
+    }
+  });
+}
+
+// ── Alle Render-Funktionen auf einmal aufrufen ──
+function renderAll(){
+  renderTaskList('today','todayTaskList','todayTaskCount');
+  renderCredits();
+  renderDeadlines();
+  renderJobMetrics();
+  renderGoals();
+  rerenderEvents();
+  if(window.weekChartInstance) updateChartIfReady();
+}
+
+// ── INIT ──
+function init(){
+  formatHeaderDate();
+  initTheme();
+  bindToggleForms();
+  bindPanelCloseButtons();
+  bindTaskList('todayTaskList','today','todayTaskCount');
+  bindTaskForm('todayTaskForm','today','todayTaskList','todayTaskCount','todayTaskFormWrap');
+  bindTaskEditForm();
+  bindCreditsForm();
+  bindDeadlineForm();
+  bindJobHoursInline();
+  bindGoalForm();
+  bindEventForm();
+  bindCalendarNav();
+  bindSelectedDayEvents();
+  bindCalendarCells();
+  buildChart(document.documentElement.getAttribute('data-theme')||'light');
+  initSupabase();
+}
+init();
+</script>
+</body>
+</html>
