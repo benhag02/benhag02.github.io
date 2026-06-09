@@ -97,28 +97,28 @@
       <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
     </svg>
+
     <div>
       <div class="auth-title">Campus Career Kick</div>
-      <div class="auth-sub">Deine Daten werden geräteübergreifend gespeichert.</div>
+      <div class="auth-sub">
+        Melde dich per E-Mail-Link an. Auf diesem Gerät bleibst du danach in der Regel länger eingeloggt.
+      </div>
     </div>
-    <!-- Tab-Switcher -->
-    <div style="display:flex;gap:4px;background:var(--color-surface-2);border-radius:var(--radius-full);padding:4px">
-      <button type="button" class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Anmelden</button>
-      <button type="button" class="auth-tab inactive" id="tabRegister" onclick="switchTab('register')">Registrieren</button>
-    </div>
-    <!-- Login -->
-    <form class="auth-form" id="authLoginForm">
-      <input class="field" type="email" name="email" placeholder="E-Mail" required autocomplete="email" />
-      <input class="field" type="password" name="password" placeholder="Passwort" required autocomplete="current-password" />
-      <button class="mini-btn primary" type="submit" id="authLoginBtn">Anmelden</button>
+
+    <form class="auth-form" id="authMagicForm">
+      <input
+        class="field"
+        type="email"
+        name="email"
+        placeholder="E-Mail"
+        required
+        autocomplete="email"
+      />
+      <button class="mini-btn primary" type="submit" id="authMagicBtn">
+        Anmeldelink senden
+      </button>
     </form>
-    <!-- Registrieren -->
-    <form class="auth-form" id="authRegisterForm" style="display:none">
-      <input class="field" type="email" name="email" placeholder="E-Mail" required autocomplete="email" />
-      <input class="field" type="password" name="password" placeholder="Passwort (min. 6 Zeichen)" required minlength="6" autocomplete="new-password" />
-      <input class="field" type="password" name="password2" placeholder="Passwort wiederholen" required minlength="6" autocomplete="new-password" />
-      <button class="mini-btn primary" type="submit" id="authRegisterBtn">Konto erstellen</button>
-    </form>
+
     <div class="auth-msg" id="authMsg"></div>
     <div class="auth-err" id="authErr"></div>
   </div>
@@ -1145,67 +1145,41 @@ function showAuth(){
 }
 
 // ── Auth-Formular ──
-function switchTab(tab){
-  const isLogin = tab === 'login';
-  document.getElementById('authLoginForm').style.display = isLogin ? 'flex' : 'none';
-  document.getElementById('authRegisterForm').style.display = isLogin ? 'none' : 'flex';
-  document.getElementById('tabLogin').className = isLogin ? 'auth-tab active' : 'auth-tab inactive';
-  document.getElementById('tabRegister').className = isLogin ? 'auth-tab inactive' : 'auth-tab active';
-  document.getElementById('authMsg').classList.remove('visible');
-  document.getElementById('authErr').classList.remove('visible');
-}
-
-document.getElementById('authLoginForm').addEventListener('submit', async e => {
+// ── Magic-Link Auth ──
+document.getElementById('authMagicForm').addEventListener('submit', async e => {
   e.preventDefault();
+
   const fd = new FormData(e.currentTarget);
   const email = fd.get('email').toString().trim();
-  const password = fd.get('password').toString();
-  const btn = document.getElementById('authLoginBtn');
-  const err = document.getElementById('authErr');
-  err.classList.remove('visible');
-  btn.textContent = '…';
-  btn.disabled = true;
-  const { error } = await supa.auth.signInWithPassword({ email, password });
-  if(error){
-    err.textContent = error.message === 'Invalid login credentials'
-      ? 'E-Mail oder Passwort falsch.'
-      : 'Fehler: ' + error.message;
-    err.classList.add('visible');
-    btn.textContent = 'Anmelden';
-    btn.disabled = false;
-  }
-});
 
-document.getElementById('authRegisterForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const fd = new FormData(e.currentTarget);
-  const email = fd.get('email').toString().trim();
-  const password = fd.get('password').toString();
-  const password2 = fd.get('password2').toString();
-  const btn = document.getElementById('authRegisterBtn');
+  const btn = document.getElementById('authMagicBtn');
   const msg = document.getElementById('authMsg');
   const err = document.getElementById('authErr');
-  err.classList.remove('visible');
+
   msg.classList.remove('visible');
-  if(password !== password2){
-    err.textContent = 'Passwörter stimmen nicht überein.';
-    err.classList.add('visible');
-    return;
-  }
-  btn.textContent = '…';
+  err.classList.remove('visible');
+
+  btn.textContent = 'Link wird gesendet …';
   btn.disabled = true;
-  const { error } = await supa.auth.signUp({ email, password });
-  if(error){
+
+  const { error } = await supa.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: 'https://benhag02.github.io/'
+    }
+  });
+
+  if (error) {
     err.textContent = 'Fehler: ' + error.message;
     err.classList.add('visible');
-    btn.textContent = 'Konto erstellen';
-    btn.disabled = false;
   } else {
-    msg.textContent = '✓ Konto erstellt! Du bist jetzt angemeldet.';
+    msg.textContent = '✓ Prüfe deine E-Mails und öffne den Anmeldelink.';
     msg.classList.add('visible');
-    btn.textContent = 'Konto erstellen';
-    btn.disabled = false;
+    e.currentTarget.reset();
   }
+
+  btn.textContent = 'Anmeldelink senden';
+  btn.disabled = false;
 });
 
 // ── Logout ──
