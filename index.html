@@ -6,7 +6,6 @@
   <title>Campus Career Kick</title>
   <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
   <style>
     :root,[data-theme="light"]{--color-bg:#f4f6fb;--color-surface:#fff;--color-surface-2:#f9fafc;--color-surface-3:#eef2ff;--color-border:#e2e6ef;--color-divider:#eaecf3;--color-text:#1a1f2e;--color-text-muted:#6b7280;--color-text-faint:#a5afc3;--color-blue:#2563eb;--color-blue-light:#dbeafe;--color-blue-mid:#93c5fd;--color-green:#16a34a;--color-green-light:#dcfce7;--color-gold:#d97706;--color-gold-light:#fef3c7;--color-purple:#7c3aed;--color-purple-light:#ede9fe;--color-red:#dc2626;--shadow-sm:0 1px 3px rgba(30,41,59,.07);--shadow-md:0 8px 24px rgba(30,41,59,.10);--radius-sm:.75rem;--radius-md:1rem;--radius-lg:1.25rem;--radius-full:999px;--space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--text-xs:clamp(.75rem,.7rem + .25vw,.875rem);--text-sm:clamp(.875rem,.8rem + .35vw,1rem);--text-base:clamp(1rem,.95rem + .25vw,1.125rem);--text-lg:clamp(1.125rem,1rem + .75vw,1.5rem);--text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.2rem);--font-display:'Cabinet Grotesk','Helvetica Neue',sans-serif;--font-body:'Satoshi','Inter',sans-serif;--transition:180ms cubic-bezier(.16,1,.3,1)}
     [data-theme="dark"]{--color-bg:#0f1117;--color-surface:#161b27;--color-surface-2:#1c2235;--color-surface-3:#1d2d4f;--color-border:#252d40;--color-divider:#1e2539;--color-text:#e2e8f0;--color-text-muted:#94a3b8;--color-text-faint:#64748b;--color-blue:#60a5fa;--color-blue-light:#1e3a5f;--color-blue-mid:#3b82f6;--color-green:#4ade80;--color-green-light:#163d28;--color-gold:#fbbf24;--color-gold-light:#4b3309;--color-purple:#a78bfa;--color-purple-light:#2b1d52;--color-red:#f87171;--shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 8px 24px rgba(0,0,0,.45)}
@@ -62,67 +61,9 @@
     .next-event{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:linear-gradient(180deg,var(--color-surface-3),var(--color-surface-2));border:1px solid var(--color-border);border-radius:var(--radius-md)}.next-event-icon{width:44px;height:44px;border-radius:14px;background:var(--color-surface);display:flex;align-items:center;justify-content:center;font-size:1.2rem;border:1px solid var(--color-border)}
     .goal-stack{display:grid;gap:var(--space-3)} .goal-card,.day-event-card{padding:var(--space-4);border-radius:1rem;border:1px solid var(--color-border);background:linear-gradient(180deg,var(--color-surface),var(--color-surface-2));display:grid;grid-template-columns:auto 1fr auto;gap:var(--space-3);align-items:start;transition:border-color var(--transition),transform var(--transition)} .goal-card:hover,.day-event-card:hover{transform:translateY(-1px)} .goal-index{width:34px;height:34px;border-radius:12px;background:var(--color-purple-light);color:var(--color-purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--text-sm)} .goal-title{font-size:var(--text-sm);font-weight:700}.goal-sub{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px} .goal-actions{display:flex;gap:var(--space-2)} .selected-day-panel{display:none;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md)} .selected-day-panel.is-open{display:flex}
     .edit-panel{display:none;flex-direction:column;gap:var(--space-3);padding:var(--space-3);background:linear-gradient(180deg,var(--color-surface-2),var(--color-surface));border:1px solid var(--color-border);border-radius:var(--radius-md)}.edit-panel.is-open{display:flex}.edit-panel-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}.edit-panel-title{font-size:var(--text-sm);font-weight:700}.edit-close{width:32px;height:32px;border-radius:999px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-muted)}.chart-container{position:relative;height:210px}.site-footer{text-align:center;padding:var(--space-8) 0 var(--space-4);font-size:var(--text-xs);color:var(--color-text-faint)}
-
-    /* ── AUTH OVERLAY ── */
-    .auth-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:var(--color-bg)}
-    .auth-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-8);max-width:380px;width:90%;display:flex;flex-direction:column;gap:var(--space-5);box-shadow:var(--shadow-md);text-align:center}
-    .auth-logo{width:56px;height:56px;margin:0 auto}
-    .auth-title{font-family:var(--font-display);font-size:var(--text-lg);font-weight:800}
-    .auth-sub{font-size:var(--text-sm);color:var(--color-text-muted)}
-    .auth-form{display:flex;flex-direction:column;gap:var(--space-3)}
-    .auth-msg{font-size:var(--text-sm);color:var(--color-green);display:none}
-    .auth-msg.visible{display:block}
-    .auth-err{font-size:var(--text-sm);color:var(--color-red);display:none}
-    .auth-tab{flex:1;padding:.6rem 1rem;border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:600;border:2px solid transparent;cursor:pointer;transition:all var(--transition);display:block}
-    .auth-tab.active{background:var(--color-blue);color:#fff;border-color:var(--color-blue)}
-    .auth-tab.inactive{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
-    .auth-tab.inactive:hover{background:var(--color-surface-2)}
-    .auth-err.visible{display:block}
-    .user-bar{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--color-text-muted)}
-    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--color-green);flex-shrink:0}
-    .sync-dot.saving{background:var(--color-gold);animation:pulse .8s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   </style>
 </head>
 <body>
-
-<div class="auth-overlay" id="authOverlay">
-  <div class="auth-card">
-    <svg class="auth-logo" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="44" height="44" rx="12" fill="#2563eb"/>
-      <path d="M14 15 C14 13 16 12 18 12 L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M14 15 L14 29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M14 29 C14 31 16 32 18 32 L22 32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="25" y1="12" x2="25" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="25" y1="22" x2="32" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="25" y1="22" x2="32" y2="32" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>
-
-    <div>
-      <div class="auth-title">Campus Career Kick</div>
-      <div class="auth-sub">
-        Melde dich per E-Mail-Link an. Auf diesem Gerät bleibst du danach in der Regel länger eingeloggt.
-      </div>
-    </div>
-
-    <form class="auth-form" id="authMagicForm">
-      <input
-        class="field"
-        type="email"
-        name="email"
-        placeholder="E-Mail"
-        required
-        autocomplete="email"
-      />
-      <button class="mini-btn primary" type="submit" id="authMagicBtn">
-        Anmeldelink senden
-      </button>
-    </form>
-
-    <div class="auth-msg" id="authMsg"></div>
-    <div class="auth-err" id="authErr"></div>
-  </div>
-</div>
 <div class="page">
   <header class="site-header">
     <div class="header-brand">
@@ -488,7 +429,7 @@ function bindTaskList(listId,key,countId){
     const task=state.tasks[key].find(t=>t.id===item.dataset.id);
     if(!task)return;
     const action=event.target.dataset.action||event.target.closest('[data-action]')?.dataset.action;
-    if(action==='toggle'){task.done=!task.done;renderTaskList(key,listId,countId);scheduleSave();return;}
+    if(action==='toggle'){task.done=!task.done;renderTaskList(key,listId,countId);return;}
     if(action==='delete'){state.tasks[key]=state.tasks[key].filter(t=>t.id!==task.id);renderTaskList(key,listId,countId);return;}
     if(action==='edit'){
       state.editingTaskId=task.id;
@@ -516,7 +457,7 @@ function bindTaskForm(formId,key,listId,countId,wrapId){
 
 // ── CREDITS ──
 function renderCredits(){const{earned,total}=state.credits;const pct=Math.max(0,Math.min(100,(earned/total)*100));document.getElementById('creditProgressText').textContent=`${earned} / ${total} Credits · ${pct.toFixed(0)} %`;document.getElementById('creditFill').style.width=pct+'%';}
-function bindCreditsForm(){document.getElementById('creditsForm').addEventListener('submit',event=>{event.preventDefault();const fd=new FormData(event.currentTarget);const earned=Number(fd.get('earned'));if(Number.isFinite(earned)&&earned>=0)state.credits.earned=Math.min(120,earned);state.credits.total=120;renderCredits();scheduleSave();document.getElementById('creditsFormWrap').classList.remove('is-open');event.currentTarget.reset();});}
+function bindCreditsForm(){document.getElementById('creditsForm').addEventListener('submit',event=>{event.preventDefault();const fd=new FormData(event.currentTarget);const earned=Number(fd.get('earned'));if(Number.isFinite(earned)&&earned>=0)state.credits.earned=Math.min(120,earned);state.credits.total=120;renderCredits();document.getElementById('creditsFormWrap').classList.remove('is-open');event.currentTarget.reset();});}
 
 // ── JOB-METRIKEN mit auto-Überstunden ──
 function renderJobMetrics(){
@@ -574,7 +515,6 @@ function bindJobHoursInline(){
 
     state.job.overtime=Math.max(0,newOvertime);
     renderJobMetrics();
-    scheduleSave();
     closePanel('jobInlineEditor');
   });
 }
@@ -728,7 +668,6 @@ function bindEventForm(){
     event.currentTarget.reset();
     document.getElementById('eventFormWrap').classList.remove('is-open');
     rerenderEvents();
-    scheduleSave();
   });
   document.getElementById('eventEditForm').addEventListener('submit',event=>{
     event.preventDefault();
@@ -741,7 +680,6 @@ function bindEventForm(){
     state.selectedCalendarDate=ev.date;
     closePanel('eventEditor');
     rerenderEvents();
-    scheduleSave();
   });
 }
 
@@ -794,8 +732,8 @@ function bindSelectedDayEvents(){
 
     const ev=state.events.find(item=>item.id===id);
     if(!ev)return;
-    if(action==='delete'){state.events=state.events.filter(item=>item.id!==ev.id);renderSelectedDayEvents();rerenderEvents();scheduleSave();return;}
-    if(action==='edit'{
+    if(action==='delete'){state.events=state.events.filter(item=>item.id!==ev.id);renderSelectedDayEvents();rerenderEvents();return;}
+    if(action==='edit'){
       state.editingEventId=ev.id;
       const form=document.getElementById('eventEditForm');
       form.title.value=ev.title;form.date.value=ev.date;form.startTime.value=ev.startTime;form.endTime.value=ev.endTime;form.category.value=ev.category;
@@ -876,7 +814,6 @@ function bindDeadlineForm(){
     closePanel('deadlineEditor');
     renderDeadlines();
     rerenderEvents();
-    scheduleSave();
   });
 }
 
@@ -946,7 +883,6 @@ function bindTaskEditForm(){
     task.category=fd.get('category').toString();
     closePanel('taskEditor');
     renderTaskList(key,'todayTaskList','todayTaskCount');
-    scheduleSave();
   });
 }
 
@@ -960,9 +896,8 @@ function bindGoalForm(){
     event.currentTarget.reset();
     document.getElementById('goalFormWrap').classList.remove('is-open');
     renderGoals();
-    scheduleSave();
   });
-  document.getElementById('goalList'.addEventListener('click',event=>{
+  document.getElementById('goalList').addEventListener('click',event=>{
     // Klicks kommen aus verschachtelten goal-stack Divs
     event.stopPropagation();
     const actionBtn=event.target.closest('[data-action]');
@@ -1004,7 +939,6 @@ function bindGoalForm(){
     goal.title=title;goal.category=fd.get('category').toString();goal.subtitle=fd.get('subtitle').toString().trim();
     closePanel('goalEditor');
     renderGoals();
-    scheduleSave();
   });
 }
 
@@ -1061,207 +995,30 @@ function buildChart(theme){
 }
 function updateChartTheme(theme){if(window.weekChartInstance)window.weekChartInstance.destroy();buildChart(theme);}
 
-
-// ══════════════════════════════════════════════
-// SUPABASE – Persistenz & Auth
-// ══════════════════════════════════════════════
-const SUPA_URL = 'https://usbvxfhzwyuzxnezrqik.supabase.co';
-const SUPA_KEY = 'sb_publishable_zFoeTOWshWgrwPuP_4WSVw_M_4o67Ga';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-});
-
-let currentUser = null;
-let saveTimer = null;
-
-// ── Sync-Dot ──
-function setSaving(active){
-  document.getElementById('syncDot')?.classList.toggle('saving', active);
-}
-
-// ── State komplett als ein JSON-Blob speichern ──
-const SAVE_KEY = 'cck_state';
-
-function stateToJson(){
-  return JSON.stringify({
-    credits: state.credits,
-    job: state.job,
-    deadlines: state.deadlines,
-    tasks: state.tasks,
-    goals: state.goals,
-    events: state.events
-  });
-}
-
-function applyStateJson(json){
-  if(!json) return;
-  try{
-    const s = typeof json === 'string' ? JSON.parse(json) : json;
-    if(s.credits) state.credits = s.credits;
-    if(s.job) state.job = s.job;
-    if(s.deadlines) state.deadlines = s.deadlines;
-    if(s.tasks) state.tasks = s.tasks;
-    if(s.goals) state.goals = s.goals;
-    if(s.events) state.events = s.events;
-  } catch(e){ console.warn('State parse error', e); }
-}
-
-// ── Daten in Supabase speichern (debounced) ──
-async function saveToSupabase(){
-  if(!currentUser) return;
-  setSaving(true);
-  const payload = { key: SAVE_KEY, value: JSON.parse(stateToJson()), user_id: currentUser.id };
-  await supa.from('settings').upsert(payload, { onConflict: 'key,user_id' });
-  setSaving(false);
-}
-
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveToSupabase, 800);
-}
-
-// ── Daten aus Supabase laden ──
-async function loadFromSupabase(){
-  if(!currentUser) return;
-  const { data, error } = await supa
-    .from('settings')
-    .select('value')
-    .eq('key', SAVE_KEY)
-    .eq('user_id', currentUser.id)
-    .single();
-  if(data?.value) applyStateJson(data.value);
-}
-
-// ── Auth: Overlay steuern ──
-function showApp(user){
-  currentUser = user;
-  document.getElementById('authOverlay').style.display = 'none';
-  document.getElementById('userBar').style.display = 'flex';
-  document.getElementById('userEmail').textContent = user.email;
-}
-
-function showAuth(){
-  currentUser = null;
-  document.getElementById('authOverlay').style.display = 'flex';
-  document.getElementById('userBar').style.display = 'none';
-}
-
-// ── Auth-Formular ──
-// ── Magic-Link Auth ──
-document.getElementById('authMagicForm').addEventListener('submit', async e => {
-  e.preventDefault();
-
-  const fd = new FormData(e.currentTarget);
-  const email = fd.get('email').toString().trim();
-
-  const btn = document.getElementById('authMagicBtn');
-  const msg = document.getElementById('authMsg');
-  const err = document.getElementById('authErr');
-
-  msg.classList.remove('visible');
-  err.classList.remove('visible');
-
-  btn.textContent = 'Link wird gesendet …';
-  btn.disabled = true;
-
-  const { error } = await supa.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: 'https://benhag02.github.io/'
-    }
-  });
-
-  if (error) {
-    err.textContent = 'Fehler: ' + error.message;
-    err.classList.add('visible');
-  } else {
-    msg.textContent = '✓ Prüfe deine E-Mails und öffne den Anmeldelink.';
-    msg.classList.add('visible');
-    e.currentTarget.reset();
-  }
-
-  btn.textContent = 'Anmeldelink senden';
-  btn.disabled = false;
-});
-
-// ── Logout ──
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await supa.auth.signOut();
-  showAuth();
-});
-
-// ── Auth-Status beim Start prüfen + Session-Wechsel hören ──
-async function initSupabase(){
-  const hasAuthHash =
-    window.location.hash.includes('access_token') ||
-    window.location.hash.includes('refresh_token') ||
-    window.location.hash.includes('type=');
-
-  if (hasAuthHash) {
-    await new Promise(resolve => setTimeout(resolve, 800));
-  }
-
-  const { data: { session } } = await supa.auth.getSession();
-
-  if(session?.user){
-    showApp(session.user);
-    await loadFromSupabase();
-    renderAll();
-
-    if (hasAuthHash) {
-      history.replaceState(null, '', window.location.pathname);
-    }
-  } else {
-    showAuth();
-    renderAll();
-  }
-
-  supa.auth.onAuthStateChange(async (event, session) => {
-    if(event === 'SIGNED_IN' && session?.user){
-      showApp(session.user);
-      await loadFromSupabase();
-      renderAll();
-      history.replaceState(null, '', window.location.pathname);
-    } else if(event === 'SIGNED_OUT'){
-      showAuth();
-    }
-  });
-}
-
-// ── Alle Render-Funktionen auf einmal aufrufen ──
-function renderAll(){
-  renderTaskList('today','todayTaskList','todayTaskCount');
-  renderCredits();
-  renderDeadlines();
-  renderJobMetrics();
-  renderGoals();
-  rerenderEvents();
-  if(window.weekChartInstance) updateChartIfReady();
-}
-
 // ── INIT ──
 function init(){
   formatHeaderDate();
   initTheme();
   bindToggleForms();
   bindPanelCloseButtons();
+  renderTaskList('today','todayTaskList','todayTaskCount');
   bindTaskList('todayTaskList','today','todayTaskCount');
   bindTaskForm('todayTaskForm','today','todayTaskList','todayTaskCount','todayTaskFormWrap');
   bindTaskEditForm();
+  renderCredits();
   bindCreditsForm();
+  renderDeadlines();
   bindDeadlineForm();
+  renderJobMetrics();
   bindJobHoursInline();
+  renderGoals();
   bindGoalForm();
   bindEventForm();
   bindCalendarNav();
   bindSelectedDayEvents();
+  rerenderEvents();
   bindCalendarCells();
   buildChart(document.documentElement.getAttribute('data-theme')||'light');
-  initSupabase();
 }
 init();
 </script>
