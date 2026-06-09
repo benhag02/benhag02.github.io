@@ -1024,3 +1024,4 @@ init();
     handleCaptureRequest(event);
   });
 })();
+init();
