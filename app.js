@@ -72,6 +72,7 @@ async function checkAuthOnStart() {
   if (user) {
     showAppView()
     await loadTasksFromSupabase()
+    await loadGoalsFromSupabase();
   } else {
     showAuthView()
   }
@@ -94,6 +95,7 @@ function bindAuth() {
       status.textContent = 'Eingeloggt';
       showAppView();
       await loadTasksFromSupabase();
+      await loadGoalsFromSupabase();
     } catch (err) {
       status.textContent = err.message;
     }
@@ -692,6 +694,67 @@ const GOAL_CAT_ICONS={uni:'🎓',arbeit:'💼',freizeit:'🏖️'};
 const GOAL_CAT_COLORS={uni:'var(--color-blue)',arbeit:'var(--color-gold)',freizeit:'var(--color-green)'};
 const GOAL_CAT_BG={uni:'var(--color-blue-light)',arbeit:'var(--color-gold-light)',freizeit:'var(--color-green-light)'};
 
+async function loadGoalsFromSupabase() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.goals = [];
+    renderGoals();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('goals')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+
+  state.goals = data.map(goal => ({
+    id: String(goal.id),
+    title: goal.title,
+    subtitle: goal.subtitle || '',
+    category: goal.category || 'uni'
+  }));
+
+  renderGoals();
+}
+
+async function addGoalToSupabase(title, subtitle, category) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('goals')
+    .insert({
+      user_id: user.id,
+      title,
+      subtitle,
+      category
+    });
+
+  if (error) throw error;
+}
+
+async function updateGoalInSupabase(id, updates) {
+  const { error } = await supabase
+    .from('goals')
+    .update(updates)
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
+async function deleteGoalFromSupabase(id) {
+  const { error } = await supabase
+    .from('goals')
+    .delete()
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
 function renderGoals(){
   const wrap=document.getElementById('goalList');
   wrap.innerHTML='';
@@ -762,59 +825,91 @@ function bindTaskEditForm() {
   });
 }
 
-function bindGoalForm(){
-  document.getElementById('goalForm').addEventListener('submit',event=>{
+function bindGoalForm() {
+  const goalForm = document.getElementById('goalForm');
+  const goalList = document.getElementById('goalList');
+  const goalEditForm = document.getElementById('goalEditForm');
+
+  if (!goalForm || !goalList || !goalEditForm) return;
+
+  goalForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    if(!title)return;
-    state.goals.push({id:crypto.randomUUID(),title,category:fd.get('category').toString(),subtitle:fd.get('subtitle').toString().trim()});
-    event.currentTarget.reset();
-    document.getElementById('goalFormWrap').classList.remove('is-open');
-    renderGoals();
+
+    const form = goalForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const subtitle = (fd.get('subtitle') || '').toString().trim();
+    const category = (fd.get('category') || 'uni').toString();
+
+    if (!title) return;
+
+    try {
+      await addGoalToSupabase(title, subtitle, category);
+      form.reset();
+      document.getElementById('goalFormWrap')?.classList.remove('is-open');
+      await loadGoalsFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
-  document.getElementById('goalList').addEventListener('click',event=>{
-    // Klicks kommen aus verschachtelten goal-stack Divs
+
+  goalList.addEventListener('click', async (event) => {
     event.stopPropagation();
-    const actionBtn=event.target.closest('[data-action]');
-    if(!actionBtn)return;
-    const card=event.target.closest('.goal-card');
-    if(!card)return;
-    const goal=state.goals.find(g=>g.id===card.dataset.id);
-    if(!goal)return;
-    const action=actionBtn.dataset.action;
-    if(action==='delete'){state.goals=state.goals.filter(g=>g.id!==goal.id);renderGoals();return;}
-    if(action==='edit'){
-      state.editingGoalId=goal.id;
-      const form=document.getElementById('goalEditForm');
-      form.title.value=goal.title;form.category.value=goal.category||'studium';form.subtitle.value=goal.subtitle||'';
-      document.querySelector('#goalEditor .edit-panel-title').textContent='Wochenziel bearbeiten';
-      form.dataset.mode='goal';
-      openPanel('goalEditor');
+
+    const actionBtn = event.target.closest('[data-action]');
+    if (!actionBtn) return;
+
+    const card = event.target.closest('.goal-card');
+    if (!card) return;
+
+    const goal = state.goals.find(g => g.id === card.dataset.id);
+    if (!goal) return;
+
+    const action = actionBtn.dataset.action;
+
+    try {
+      if (action === 'delete') {
+        await deleteGoalFromSupabase(goal.id);
+        await loadGoalsFromSupabase();
+        return;
+      }
+
+      if (action === 'edit') {
+        state.editingGoalId = goal.id;
+        goalEditForm.title.value = goal.title;
+        goalEditForm.category.value = goal.category || 'uni';
+        goalEditForm.subtitle.value = goal.subtitle || '';
+        document.querySelector('#goalEditor .edit-panel-title').textContent = 'Wochenziel bearbeiten';
+        openPanel('goalEditor');
+      }
+    } catch (err) {
+      alert(err.message);
     }
   });
-  document.getElementById('goalEditForm').addEventListener('submit',event=>{
+
+  goalEditForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    if(!title)return;
-    const mode=event.currentTarget.dataset.mode||'goal';
-    if(mode==='task'){
-      const key=event.currentTarget.dataset.taskKey;
-      const task=state.tasks[key].find(t=>t.id===state.editingGoalId);
-      if(!task)return;
-      task.title=title;
-      task.category=fd.get('category').toString();
+
+    const form = goalEditForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const subtitle = (fd.get('subtitle') || '').toString().trim();
+    const category = (fd.get('category') || 'uni').toString();
+
+    if (!title || !state.editingGoalId) return;
+
+    try {
+      await updateGoalInSupabase(state.editingGoalId, {
+        title,
+        subtitle,
+        category
+      });
+
       closePanel('goalEditor');
-      renderTaskList(key,'todayTaskList','todayTaskCount');
-      event.currentTarget.dataset.mode='goal';
-      return;
+      await loadGoalsFromSupabase();
+    } catch (err) {
+      alert(err.message);
     }
-    const goal=state.goals.find(g=>g.id===state.editingGoalId);
-    if(!goal)return;
-    goal.title=title;goal.category=fd.get('category').toString();goal.subtitle=fd.get('subtitle').toString().trim();
-    closePanel('goalEditor');
-    renderGoals();
   });
 }
 
