@@ -1,5 +1,26 @@
 import { supabase } from './supabaseClient.js'
 
+async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) throw error
+  return user
+}
+
+async function signUp(email, password) {
+  const { error } = await supabase.auth.signUp({ email, password })
+  if (error) throw error
+}
+
+async function signIn(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw error
+}
+
+async function signOut() {
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
+
 const state = {
   editingTaskId: null,
   editingTaskKey: null,
