@@ -71,8 +71,10 @@ async function checkAuthOnStart() {
 
   if (user) {
     showAppView()
-    await loadTasksFromSupabase()
+    await loadTasksFromSupabase();
     await loadGoalsFromSupabase();
+    await loadCreditsFromSupabase();
+    await loadDeadlinesFromSupabase();
   } else {
     showAuthView()
   }
@@ -96,6 +98,8 @@ function bindAuth() {
       showAppView();
       await loadTasksFromSupabase();
       await loadGoalsFromSupabase();
+      await loadCreditsFromSupabase();
+      await loadDeadlinesFromSupabase();
     } catch (err) {
       status.textContent = err.message;
     }
@@ -327,7 +331,77 @@ function bindTaskForm(formId, key, listId, countId, wrapId) {
 
 // ── CREDITS ──
 function renderCredits(){const{earned,total}=state.credits;const pct=Math.max(0,Math.min(100,(earned/total)*100));document.getElementById('creditProgressText').textContent=`${earned} / ${total} Credits · ${pct.toFixed(0)} %`;document.getElementById('creditFill').style.width=pct+'%';}
-function bindCreditsForm(){document.getElementById('creditsForm').addEventListener('submit',event=>{event.preventDefault();const fd=new FormData(event.currentTarget);const earned=Number(fd.get('earned'));if(Number.isFinite(earned)&&earned>=0)state.credits.earned=Math.min(120,earned);state.credits.total=120;renderCredits();document.getElementById('creditsFormWrap').classList.remove('is-open');event.currentTarget.reset();});}
+
+function bindCreditsForm() {
+  const form = document.getElementById('creditsForm');
+  const wrap = document.getElementById('creditsFormWrap');
+
+  if (!form) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const fd = new FormData(form);
+    const earned = Number(fd.get('earned'));
+
+    if (!Number.isFinite(earned) || earned < 0) return;
+
+    try {
+      await saveCreditsToSupabase(Math.min(120, earned), 120);
+      form.reset();
+      wrap?.classList.remove('is-open');
+      await loadCreditsFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
+
+async function loadCreditsFromSupabase() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.credits = { earned: 0, total: 120 };
+    renderCredits();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('credits')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  state.credits = {
+    earned: data?.earned ?? 0,
+    total: data?.total ?? 120
+  };
+
+  renderCredits();
+}
+
+async function saveCreditsToSupabase(earned, total = 120) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('credits')
+    .upsert(
+      {
+        user_id: user.id,
+        earned,
+        total,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: 'user_id'
+      }
+    );
+
+  if (error) throw error;
+}
 
 // ── JOB-METRIKEN mit auto-Überstunden ──
 function renderJobMetrics(){
@@ -631,60 +705,159 @@ function renderDeadlines(){
   });
 }
 
-function bindDeadlineForm(){
-  document.getElementById('deadlineForm').addEventListener('submit',event=>{
+function bindDeadlineForm() {
+  const deadlineForm = document.getElementById('deadlineForm');
+  const deadlineList = document.getElementById('deadlineList');
+  const deadlineEditForm = document.getElementById('deadlineEditForm');
+
+  if (!deadlineForm || !deadlineList || !deadlineEditForm) return;
+
+  deadlineForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    const date=fd.get('date').toString().trim();
-    if(!title||!date)return;
-    const pretty=new Date(date+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
-    // Urgency automatisch bestimmen
-    const daysUntil=Math.ceil((new Date(date)-new Date())/(1000*60*60*24));
-    const level=daysUntil<=7?'urgent':daysUntil<=21?'warn':'normal';
-    state.deadlines.push({id:crypto.randomUUID(),title,date:pretty,isoDate:date,level});
-    event.currentTarget.reset();
-    document.getElementById('deadlineFormWrap').classList.remove('is-open');
-    renderDeadlines();
-    rerenderEvents();
-  });
-  document.getElementById('deadlineList').addEventListener('click',event=>{
-    const actionBtn=event.target.closest('[data-action]');
-    if(!actionBtn)return;
-    const item=event.target.closest('.deadline-item');
-    if(!item)return;
-    const deadline=state.deadlines.find(d=>d.id===item.dataset.id);
-    if(!deadline)return;
-    const action=actionBtn.dataset.action;
-    if(action==='delete'){
-      state.deadlines=state.deadlines.filter(d=>d.id!==deadline.id);
-      renderDeadlines();
-      rerenderEvents();
-    }else if(action==='edit'){
-      state.editingDeadlineId=deadline.id;
-      const form=document.getElementById('deadlineEditForm');
-      form.title.value=deadline.title;
-      form.date.value=deadline.isoDate||'';
-      openPanel('deadlineEditor');
+
+    const form = deadlineForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const date = (fd.get('date') || '').toString().trim();
+
+    if (!title || !date) return;
+
+    const daysUntil = Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24));
+    const level = daysUntil <= 7 ? 'urgent' : daysUntil <= 21 ? 'warn' : 'normal';
+
+    try {
+      await addDeadlineToSupabase(title, date, level);
+      form.reset();
+      document.getElementById('deadlineFormWrap')?.classList.remove('is-open');
+      await loadDeadlinesFromSupabase();
+    } catch (err) {
+      alert(err.message);
     }
   });
-  document.getElementById('deadlineEditForm').addEventListener('submit',event=>{
+
+  deadlineList.addEventListener('click', async (event) => {
+    const actionBtn = event.target.closest('[data-action]');
+    if (!actionBtn) return;
+
+    const item = event.target.closest('.deadline-item');
+    if (!item) return;
+
+    const deadline = state.deadlines.find(d => d.id === item.dataset.id);
+    if (!deadline) return;
+
+    const action = actionBtn.dataset.action;
+
+    try {
+      if (action === 'delete') {
+        await deleteDeadlineFromSupabase(deadline.id);
+        await loadDeadlinesFromSupabase();
+        return;
+      }
+
+      if (action === 'edit') {
+        state.editingDeadlineId = deadline.id;
+        deadlineEditForm.title.value = deadline.title;
+        deadlineEditForm.date.value = deadline.isoDate || '';
+        openPanel('deadlineEditor');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  deadlineEditForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    const date=fd.get('date').toString().trim();
-    if(!title||!date)return;
-    const deadline=state.deadlines.find(d=>d.id===state.editingDeadlineId);
-    if(!deadline)return;
-    deadline.title=title;
-    deadline.isoDate=date;
-    deadline.date=new Date(date+'T12:00').toLocaleDateString('de-DE',{day:'numeric',month:'short'});
-    const daysUntil=Math.ceil((new Date(date)-new Date())/(1000*60*60*24));
-    deadline.level=daysUntil<=7?'urgent':daysUntil<=21?'warn':'normal';
-    closePanel('deadlineEditor');
+
+    const form = deadlineEditForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const date = (fd.get('date') || '').toString().trim();
+
+    if (!title || !date || !state.editingDeadlineId) return;
+
+    const daysUntil = Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24));
+    const level = daysUntil <= 7 ? 'urgent' : daysUntil <= 21 ? 'warn' : 'normal';
+
+    try {
+      await updateDeadlineInSupabase(state.editingDeadlineId, {
+        title,
+        iso_date: date,
+        level
+      });
+
+      closePanel('deadlineEditor');
+      await loadDeadlinesFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
+
+async function loadDeadlinesFromSupabase() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.deadlines = [];
     renderDeadlines();
     rerenderEvents();
-  });
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('deadlines')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('iso_date', { ascending: true });
+
+  if (error) throw error;
+
+  state.deadlines = data.map(dl => ({
+    id: String(dl.id),
+    title: dl.title,
+    isoDate: dl.iso_date,
+    date: new Date(dl.iso_date + 'T12:00').toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'short'
+    }),
+    level: dl.level || 'normal'
+  }));
+
+  renderDeadlines();
+  rerenderEvents();
+}
+
+async function addDeadlineToSupabase(title, isoDate, level) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('deadlines')
+    .insert({
+      user_id: user.id,
+      title,
+      iso_date: isoDate,
+      level
+    });
+
+  if (error) throw error;
+}
+
+async function updateDeadlineInSupabase(id, updates) {
+  const { error } = await supabase
+    .from('deadlines')
+    .update(updates)
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
+async function deleteDeadlineFromSupabase(id) {
+  const { error } = await supabase
+    .from('deadlines')
+    .delete()
+    .eq('id', Number(id));
+
+  if (error) throw error;
 }
 
 // ── WOCHENZIELE ──
