@@ -45,6 +45,16 @@ async function loadTasksFromSupabase() {
   renderTaskList('today', 'todayTaskList', 'todayTaskCount')
 }
 
+function showAuthView() {
+  document.getElementById('authView').style.display = 'block'
+  document.getElementById('appView').style.display = 'none'
+}
+
+function showAppView() {
+  document.getElementById('authView').style.display = 'none'
+  document.getElementById('appView').style.display = 'block'
+}
+
 // Ende Funktionen für Supabase
 
 const state = {
