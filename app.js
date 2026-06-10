@@ -75,6 +75,7 @@ async function checkAuthOnStart() {
     await loadGoalsFromSupabase();
     await loadCreditsFromSupabase();
     await loadDeadlinesFromSupabase();
+    await loadJobMetricsFromSupabase();
   } else {
     showAuthView()
   }
@@ -100,6 +101,7 @@ function bindAuth() {
       await loadGoalsFromSupabase();
       await loadCreditsFromSupabase();
       await loadDeadlinesFromSupabase();
+      await loadJobMetricsFromSupabase();
     } catch (err) {
       status.textContent = err.message;
     }
@@ -408,46 +410,104 @@ function openPanel(id){document.getElementById(id)?.classList.add('is-open');}
 function closePanel(id){document.getElementById(id)?.classList.remove('is-open');}
 function bindPanelCloseButtons(){document.querySelectorAll('[data-close-panel]').forEach(btn=>btn.addEventListener('click',()=>closePanel(btn.dataset.closePanel)));}
 
-function bindJobHoursInline(){
-  document.querySelectorAll('[data-edit-job]').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const form=document.getElementById('jobInlineForm');
-      form.doneHours.value=state.job.doneHours;
-      form.targetHours.value=state.job.targetHours;
-      form.manualAdd.value=0;
+function bindJobHoursInline() {
+  document.querySelectorAll('[data-edit-job]').forEach(el => {
+    el.addEventListener('click', () => {
+      const form = document.getElementById('jobInlineForm');
+      if (!form) return;
+
+      form.doneHours.value = state.job.doneHours;
+      form.targetHours.value = state.job.targetHours;
+      form.manualAdd.value = 0;
       openPanel('jobInlineEditor');
     });
   });
 
-  document.getElementById('jobInlineForm').addEventListener('submit',event=>{
+  const form = document.getElementById('jobInlineForm');
+  if (!form) return;
+
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const newDone=Number(fd.get('doneHours'));
-    const newTarget=Number(fd.get('targetHours'));
-    const manualAdd=Number(fd.get('manualAdd'))||0;
 
-    let newOvertime=state.job.overtime;
+    const fd = new FormData(form);
+    const newDone = Number(fd.get('doneHours'));
+    const newTarget = Number(fd.get('targetHours'));
+    const manualAdd = Number(fd.get('manualAdd')) || 0;
 
-    if(Number.isFinite(newDone)&&newDone>=0) state.job.doneHours=newDone;
-    if(Number.isFinite(newTarget)&&newTarget>=0) state.job.targetHours=newTarget;
+    let doneHours = state.job.doneHours;
+    let targetHours = state.job.targetHours;
+    let newOvertime = state.job.overtime;
 
-    // Auto-Überstunden: wenn Ist > Soll → Differenz addieren
-    const ist=Number.isFinite(newDone)?newDone:state.job.doneHours;
-    const soll=Number.isFinite(newTarget)?newTarget:state.job.targetHours;
-    if(ist>soll){
-      const ueberstunden=Number((ist-soll).toFixed(1));
-      newOvertime=Number((newOvertime+ueberstunden).toFixed(1));
+    if (Number.isFinite(newDone) && newDone >= 0) doneHours = newDone;
+    if (Number.isFinite(newTarget) && newTarget >= 0) targetHours = newTarget;
+
+    if (doneHours > targetHours) {
+      const ueberstunden = Number((doneHours - targetHours).toFixed(1));
+      newOvertime = Number((newOvertime + ueberstunden).toFixed(1));
     }
 
-    // Manueller Zusatz (kann auch negativ sein für Korrektur)
-    if(Number.isFinite(manualAdd)&&manualAdd!==0){
-      newOvertime=Number((newOvertime+manualAdd).toFixed(1));
+    if (Number.isFinite(manualAdd) && manualAdd !== 0) {
+      newOvertime = Number((newOvertime + manualAdd).toFixed(1));
     }
 
-    state.job.overtime=Math.max(0,newOvertime);
-    renderJobMetrics();
-    closePanel('jobInlineEditor');
+    newOvertime = Math.max(0, newOvertime);
+
+    try {
+      await saveJobMetricsToSupabase(doneHours, targetHours, newOvertime);
+      closePanel('jobInlineEditor');
+      await loadJobMetricsFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
+}
+
+async function loadJobMetricsFromSupabase() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.job = { doneHours: 0, targetHours: 10, overtime: 0 };
+    renderJobMetrics();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('job_metrics')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  state.job = {
+    doneHours: Number(data?.done_hours ?? 0),
+    targetHours: Number(data?.target_hours ?? 10),
+    overtime: Number(data?.overtime ?? 0)
+  };
+
+  renderJobMetrics();
+}
+
+async function saveJobMetricsToSupabase(doneHours, targetHours, overtime) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('job_metrics')
+    .upsert(
+      {
+        user_id: user.id,
+        done_hours: doneHours,
+        target_hours: targetHours,
+        overtime,
+        updated_at: new Date().toISOString()
+      },
+      {
+        onConflict: 'user_id'
+      }
+    );
+
+  if (error) throw error;
 }
 
 // ── EVENTS & KALENDER ──
