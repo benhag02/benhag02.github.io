@@ -55,6 +55,17 @@ function showAppView() {
   document.getElementById('appView').style.display = 'block'
 }
 
+async function checkAuthOnStart() {
+  const user = await getCurrentUser()
+
+  if (user) {
+    showAppView()
+    await loadTasksFromSupabase()
+  } else {
+    showAuthView()
+  }
+}
+
 // Ende Funktionen für Supabase
 
 const state = {
