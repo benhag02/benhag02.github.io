@@ -3,9 +3,9 @@ import { supabase } from './supabaseClient.js'
 // Supabase Funktionen
 
 async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser()
-  if (error) throw error
-  return user
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return data.session?.user ?? null;
 }
 
 async function signUp(email, password) {
