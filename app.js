@@ -742,11 +742,13 @@ function buildChart(theme){
 function updateChartTheme(theme){if(window.weekChartInstance)window.weekChartInstance.destroy();buildChart(theme);}
 
 // ── INIT ──
-function init(){
+async function init() {
   formatHeaderDate();
   initTheme();
   bindToggleForms();
   bindPanelCloseButtons();
+  bindAuth();
+
   renderTaskList('today','todayTaskList','todayTaskCount');
   bindTaskList('todayTaskList','today','todayTaskCount');
   bindTaskForm('todayTaskForm','today','todayTaskList','todayTaskCount','todayTaskFormWrap');
@@ -764,6 +766,9 @@ function init(){
   bindSelectedDayEvents();
   rerenderEvents();
   bindCalendarCells();
-  buildChart(document.documentElement.getAttribute('data-theme')||'light');
+  buildChart(document.documentElement.getAttribute('data-theme') || 'light');
+
+  await checkAuthOnStart();
 }
+
 init();
