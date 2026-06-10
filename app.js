@@ -298,10 +298,13 @@ async function addTaskToSupabase(title, category) {
 }
 
 function bindTaskForm(formId, key, listId, countId, wrapId) {
-  document.getElementById(formId).addEventListener('submit', async (event) => {
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const fd = new FormData(event.currentTarget);
+    const fd = new FormData(form);
     const title = (fd.get('title') || '').toString().trim();
     const category = (fd.get('category') || 'uni').toString();
 
@@ -309,8 +312,8 @@ function bindTaskForm(formId, key, listId, countId, wrapId) {
 
     try {
       await addTaskToSupabase(title, category);
-      event.currentTarget.reset();
-      document.getElementById(wrapId).classList.remove('is-open');
+      form.reset();
+      document.getElementById(wrapId)?.classList.remove('is-open');
       await loadTasksFromSupabase();
     } catch (err) {
       alert(err.message);
