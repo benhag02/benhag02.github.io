@@ -727,19 +727,27 @@ function renderGoals(){
   }
 }
 
-function bindTaskEditForm(){
-  document.getElementById('taskEditForm').addEventListener('submit',event=>{
+function bindTaskEditForm() {
+  document.getElementById('taskEditForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    if(!title)return;
-    const key=state.editingTaskKey;
-    const task=state.tasks[key].find(t=>t.id===state.editingTaskId);
-    if(!task)return;
-    task.title=title;
-    task.category=fd.get('category').toString();
-    closePanel('taskEditor');
-    renderTaskList(key,'todayTaskList','todayTaskCount');
+
+    const fd = new FormData(event.currentTarget);
+    const title = fd.get('title').toString().trim();
+    const category = fd.get('category').toString();
+
+    if (!title || !state.editingTaskId) return;
+
+    try {
+      await updateTaskInSupabase(state.editingTaskId, {
+        title,
+        category
+      });
+
+      closePanel('taskEditor');
+      await loadTasksFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 }
 
