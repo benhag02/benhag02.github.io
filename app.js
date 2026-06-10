@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient.js'
 
+// Supabase Funktionen
+
 async function getCurrentUser() {
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error) throw error
@@ -20,6 +22,30 @@ async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
+
+async function loadTasksFromSupabase() {
+  const user = await getCurrentUser()
+  if (!user) return
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+
+  state.tasks.today = data.map(task => ({
+    id: String(task.id),
+    title: task.title,
+    category: task.category || 'uni',
+    done: task.done
+  }))
+
+  renderTaskList('today', 'todayTaskList', 'todayTaskCount')
+}
+
+// Ende Funktionen für Supabase
 
 const state = {
   editingTaskId: null,
