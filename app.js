@@ -66,6 +66,53 @@ async function checkAuthOnStart() {
   }
 }
 
+function bindAuth() {
+  const form = document.getElementById('authForm');
+  const signUpBtn = document.getElementById('signUpBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const status = document.getElementById('authStatus');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+
+    try {
+      await signIn(email, password);
+      status.textContent = 'Eingeloggt';
+      showAppView();
+      await loadTasksFromSupabase();
+    } catch (err) {
+      status.textContent = err.message;
+    }
+  });
+
+  signUpBtn.addEventListener('click', async () => {
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+
+    try {
+      await signUp(email, password);
+      status.textContent = 'Registrierung erfolgreich. Bitte ggf. E-Mail bestätigen.';
+    } catch (err) {
+      status.textContent = err.message;
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await signOut();
+      status.textContent = 'Ausgeloggt';
+      showAuthView();
+      state.tasks.today = [];
+      renderTaskList('today', 'todayTaskList', 'todayTaskCount');
+    } catch (err) {
+      status.textContent = err.message;
+    }
+  });
+}
+
 // Ende Funktionen für Supabase
 
 const state = {
@@ -168,36 +215,95 @@ function renderTaskList(key,listId,countId){
   }
 }
 
-function bindTaskList(listId,key,countId){
-  document.getElementById(listId).addEventListener('click',event=>{
-    const item=event.target.closest('.task-item');
-    if(!item)return;
-    const task=state.tasks[key].find(t=>t.id===item.dataset.id);
-    if(!task)return;
-    const action=event.target.dataset.action||event.target.closest('[data-action]')?.dataset.action;
-    if(action==='toggle'){task.done=!task.done;renderTaskList(key,listId,countId);return;}
-    if(action==='delete'){state.tasks[key]=state.tasks[key].filter(t=>t.id!==task.id);renderTaskList(key,listId,countId);return;}
-    if(action==='edit'){
-      state.editingTaskId=task.id;
-      state.editingTaskKey=key;
-      const form=document.getElementById('taskEditForm');
-      form.title.value=task.title;
-      form.category.value=task.category||'uni';
-      openPanel('taskEditor');
+async function updateTaskInSupabase(id, updates) {
+  const { error } = await supabase
+    .from('tasks')
+    .update(updates)
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
+async function deleteTaskFromSupabase(id) {
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
+function bindTaskList(listId, key, countId) {
+  document.getElementById(listId).addEventListener('click', async (event) => {
+    const item = event.target.closest('.task-item');
+    if (!item) return;
+
+    const task = state.tasks[key].find(t => t.id === item.dataset.id);
+    if (!task) return;
+
+    const action = event.target.dataset.action || event.target.closest('[data-action]')?.dataset.action;
+
+    try {
+      if (action === 'toggle') {
+        await updateTaskInSupabase(task.id, { done: !task.done });
+        await loadTasksFromSupabase();
+        return;
+      }
+
+      if (action === 'delete') {
+        await deleteTaskFromSupabase(task.id);
+        await loadTasksFromSupabase();
+        return;
+      }
+
+      if (action === 'edit') {
+        state.editingTaskId = task.id;
+        state.editingTaskKey = key;
+        const form = document.getElementById('taskEditForm');
+        form.title.value = task.title;
+        form.category.value = task.category || 'uni';
+        openPanel('taskEditor');
+      }
+    } catch (err) {
+      alert(err.message);
     }
   });
 }
 
-function bindTaskForm(formId,key,listId,countId,wrapId){
-  document.getElementById(formId).addEventListener('submit',event=>{
+async function addTaskToSupabase(title, category) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('tasks')
+    .insert({
+      user_id: user.id,
+      title,
+      category,
+      done: false
+    });
+
+  if (error) throw error;
+}
+
+function bindTaskForm(formId, key, listId, countId, wrapId) {
+  document.getElementById(formId).addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=(fd.get('title')||'').toString().trim();
-    if(!title)return;
-    state.tasks[key].push({id:crypto.randomUUID(),title,category:(fd.get('category')||'uni').toString(),done:false});
-    event.currentTarget.reset();
-    document.getElementById(wrapId).classList.remove('is-open');
-    renderTaskList(key,listId,countId);
+
+    const fd = new FormData(event.currentTarget);
+    const title = (fd.get('title') || '').toString().trim();
+    const category = (fd.get('category') || 'uni').toString();
+
+    if (!title) return;
+
+    try {
+      await addTaskToSupabase(title, category);
+      event.currentTarget.reset();
+      document.getElementById(wrapId).classList.remove('is-open');
+      await loadTasksFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 }
 
