@@ -9,20 +9,25 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div id="authBox" style="padding:16px; max-width:420px; margin:24px auto;">
-  <h2>Login</h2>
-  <form id="authForm">
-    <input id="emailInput" type="email" placeholder="E-Mail" required />
-    <input id="passwordInput" type="password" placeholder="Passwort" required />
-    <div style="display:flex; gap:8px; margin-top:8px;">
-      <button type="submit">Einloggen</button>
-      <button type="button" id="signUpBtn">Registrieren</button>
-      <button type="button" id="logoutBtn">Logout</button>
+<div id="authView">
+    <div id="authBox">
+      <h2>Login</h2>
+      <form id="authForm">
+        <input id="emailInput" type="email" placeholder="E-Mail" required>
+        <input id="passwordInput" type="password" placeholder="Passwort" required>
+        <div>
+          <button type="submit">Einloggen</button>
+          <button type="button" id="signUpBtn">Registrieren</button>
+          <button type="button" id="logoutBtn">Logout</button>
+        </div>
+      </form>
+      <p id="authStatus"></p>
     </div>
-  </form>
-  <p id="authStatus"></p>
-</div>
-<div class="page">
+  </div>
+
+<div id="appView" style="display:none;">
+  <div class="page">
+      <!-- dein komplettes bisheriges Dashboard -->
   <header class="site-header">
     <div class="header-brand">
       <svg class="brand-logo" viewBox="0 0 44 44" fill="none" aria-label="Campus Career Kick Logo" xmlns="http://www.w3.org/2000/svg">
