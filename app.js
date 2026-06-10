@@ -1,3 +1,5 @@
+import { supabase } from './supabaseClient.js'
+
 const state = {
   editingTaskId: null,
   editingTaskKey: null,
