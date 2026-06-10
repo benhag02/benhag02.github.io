@@ -9,6 +9,19 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+<div id="authBox" style="padding:16px; max-width:420px; margin:24px auto;">
+  <h2>Login</h2>
+  <form id="authForm">
+    <input id="emailInput" type="email" placeholder="E-Mail" required />
+    <input id="passwordInput" type="password" placeholder="Passwort" required />
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button type="submit">Einloggen</button>
+      <button type="button" id="signUpBtn">Registrieren</button>
+      <button type="button" id="logoutBtn">Logout</button>
+    </div>
+  </form>
+  <p id="authStatus"></p>
+</div>
 <div class="page">
   <header class="site-header">
     <div class="header-brand">
