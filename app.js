@@ -299,6 +299,8 @@ async function addTaskToSupabase(title, category) {
 
 function bindTaskForm(formId, key, listId, countId, wrapId) {
   const form = document.getElementById(formId);
+  const wrap = document.getElementById(wrapId);
+
   if (!form) return;
 
   form.addEventListener('submit', async (event) => {
@@ -313,7 +315,7 @@ function bindTaskForm(formId, key, listId, countId, wrapId) {
     try {
       await addTaskToSupabase(title, category);
       form.reset();
-      document.getElementById(wrapId)?.classList.remove('is-open');
+      wrap?.classList.remove('is-open');
       await loadTasksFromSupabase();
     } catch (err) {
       alert(err.message);
