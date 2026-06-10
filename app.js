@@ -76,6 +76,7 @@ async function checkAuthOnStart() {
     await loadCreditsFromSupabase();
     await loadDeadlinesFromSupabase();
     await loadJobMetricsFromSupabase();
+    await loadEventsFromSupabase();
   } else {
     showAuthView()
   }
@@ -102,6 +103,7 @@ function bindAuth() {
       await loadCreditsFromSupabase();
       await loadDeadlinesFromSupabase();
       await loadJobMetricsFromSupabase();
+      await loadEventsFromSupabase();
     } catch (err) {
       status.textContent = err.message;
     }
@@ -145,12 +147,7 @@ const state = {
     today: []
   },
   goals: [],
-  events: [
-    { id: crypto.randomUUID(), title: 'Vorlesung Business Intelligence', date: '2026-06-08', startTime: '10:15', endTime: '11:45', category: 'uni' },
-    { id: crypto.randomUUID(), title: 'Datarocket Schicht', date: '2026-06-09', startTime: '13:00', endTime: '17:00', category: 'work' },
-    { id: crypto.randomUUID(), title: 'Fußballtraining', date: '2026-06-09', startTime: '18:30', endTime: '20:00', category: 'sport' },
-    { id: crypto.randomUUID(), title: 'Treffen mit Kommilitonen', date: '2026-06-12', startTime: '16:00', endTime: '18:00', category: 'private' }
-  ],
+  events: [],
   currentCalendarDate: new Date('2026-06-01T12:00:00'),
   editingGoalId: null,
   editingEventId: null,
@@ -517,6 +514,84 @@ function categoryLabel(category){return({uni:'Uni',work:'Arbeit',sport:'Sport',p
 function categoryIcon(category){return({uni:'🎓',work:'💼',sport:'⚽',private:'🧍',deadline:'🔴'})[category]||'🗓️';}
 function formatEventDate(date,startTime,endTime){const d=new Date(`${date}T${startTime}`);return d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})+' · '+startTime+'–'+endTime+' Uhr';}
 
+async function loadEventsFromSupabase() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.events = [];
+    rerenderEvents();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('date', { ascending: true })
+    .order('start_time', { ascending: true });
+
+  if (error) throw error;
+
+  state.events = data.map(ev => ({
+    id: String(ev.id),
+    title: ev.title,
+    date: ev.date,
+    startTime: String(ev.start_time).slice(0, 5),
+    endTime: String(ev.end_time).slice(0, 5),
+    category: ev.category || 'private'
+  }));
+
+  rerenderEvents();
+}
+
+async function addEventToSupabase(title, date, startTime, endTime, category) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Nicht eingeloggt');
+
+  const { error } = await supabase
+    .from('events')
+    .insert({
+      user_id: user.id,
+      title,
+      date,
+      start_time: startTime,
+      end_time: endTime,
+      category
+    });
+
+  if (error) throw error;
+}
+
+async function updateEventInSupabase(id, updates) {
+  const dbUpdates = { ...updates };
+
+  if (dbUpdates.startTime !== undefined) {
+    dbUpdates.start_time = dbUpdates.startTime;
+    delete dbUpdates.startTime;
+  }
+
+  if (dbUpdates.endTime !== undefined) {
+    dbUpdates.end_time = dbUpdates.endTime;
+    delete dbUpdates.endTime;
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update(dbUpdates)
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
+async function deleteEventFromSupabase(id) {
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', Number(id));
+
+  if (error) throw error;
+}
+
 function renderNextEvent(){
   const now=Date.now();
   const items=getCalendarItems();
@@ -646,31 +721,67 @@ function bindEventTimeLogic(formId){
   form.addEventListener('reset',()=>{ endManuallyEdited=false; });
 }
 
-function bindEventForm(){
+function bindEventForm() {
   bindEventTimeLogic('eventForm');
   bindEventTimeLogic('eventEditForm');
-  document.getElementById('eventForm').addEventListener('submit',event=>{
+
+  const eventForm = document.getElementById('eventForm');
+  const eventEditForm = document.getElementById('eventEditForm');
+
+  if (!eventForm || !eventEditForm) return;
+
+  eventForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    if(!title)return;
-    state.events.push({id:crypto.randomUUID(),title,date:fd.get('date').toString(),startTime:fd.get('startTime').toString(),endTime:fd.get('endTime').toString(),category:fd.get('category').toString()});
-    state.selectedCalendarDate=fd.get('date').toString();
-    event.currentTarget.reset();
-    document.getElementById('eventFormWrap').classList.remove('is-open');
-    rerenderEvents();
+
+    const form = eventForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const date = (fd.get('date') || '').toString();
+    const startTime = (fd.get('startTime') || '').toString();
+    const endTime = (fd.get('endTime') || '').toString();
+    const category = (fd.get('category') || 'private').toString();
+
+    if (!title || !date || !startTime || !endTime) return;
+
+    try {
+      await addEventToSupabase(title, date, startTime, endTime, category);
+      state.selectedCalendarDate = date;
+      form.reset();
+      document.getElementById('eventFormWrap')?.classList.remove('is-open');
+      await loadEventsFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
-  document.getElementById('eventEditForm').addEventListener('submit',event=>{
+
+  eventEditForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const ev=state.events.find(item=>item.id===state.editingEventId);
-    if(!ev)return;
-    const fd=new FormData(event.currentTarget);
-    const title=fd.get('title').toString().trim();
-    if(!title)return;
-    ev.title=title;ev.date=fd.get('date').toString();ev.startTime=fd.get('startTime').toString();ev.endTime=fd.get('endTime').toString();ev.category=fd.get('category').toString();
-    state.selectedCalendarDate=ev.date;
-    closePanel('eventEditor');
-    rerenderEvents();
+
+    const form = eventEditForm;
+    const fd = new FormData(form);
+    const title = (fd.get('title') || '').toString().trim();
+    const date = (fd.get('date') || '').toString();
+    const startTime = (fd.get('startTime') || '').toString();
+    const endTime = (fd.get('endTime') || '').toString();
+    const category = (fd.get('category') || 'private').toString();
+
+    if (!title || !date || !startTime || !endTime || !state.editingEventId) return;
+
+    try {
+      await updateEventInSupabase(state.editingEventId, {
+        title,
+        date,
+        startTime,
+        endTime,
+        category
+      });
+
+      state.selectedCalendarDate = date;
+      closePanel('eventEditor');
+      await loadEventsFromSupabase();
+    } catch (err) {
+      alert(err.message);
+    }
   });
 }
 
@@ -700,35 +811,51 @@ function renderSelectedDayEvents(){
   panel.classList.add('is-open');
 }
 
-function bindSelectedDayEvents(){
-  document.getElementById('selectedDayEvents').addEventListener('click',event=>{
-    const btn=event.target.closest('[data-day-action]');
-    if(!btn)return;
-    const card=event.target.closest('.day-event-card');
-    if(!card)return;
-    const action=btn.dataset.dayAction;
-    const id=card.dataset.id;
+function bindSelectedDayEvents() {
+  document.getElementById('selectedDayEvents').addEventListener('click', async (event) => {
+    const btn = event.target.closest('[data-day-action]');
+    if (!btn) return;
 
-    // Deadline-Einträge haben id wie "deadline-0"
-    if(id.startsWith('deadline-')){
-      if(action==='delete'){
-        const idx=parseInt(id.replace('deadline-',''));
-        state.deadlines.splice(idx,1);
-        state.selectedCalendarDate=null;
+    const card = event.target.closest('.day-event-card');
+    if (!card) return;
+
+    const action = btn.dataset.dayAction;
+    const id = card.dataset.id;
+
+    if (id.startsWith('deadline-')) {
+      if (action === 'delete') {
+        const idx = parseInt(id.replace('deadline-', ''), 10);
+        state.deadlines.splice(idx, 1);
+        state.selectedCalendarDate = null;
         renderDeadlines();
         rerenderEvents();
       }
       return;
     }
 
-    const ev=state.events.find(item=>item.id===id);
-    if(!ev)return;
-    if(action==='delete'){state.events=state.events.filter(item=>item.id!==ev.id);renderSelectedDayEvents();rerenderEvents();return;}
-    if(action==='edit'){
-      state.editingEventId=ev.id;
-      const form=document.getElementById('eventEditForm');
-      form.title.value=ev.title;form.date.value=ev.date;form.startTime.value=ev.startTime;form.endTime.value=ev.endTime;form.category.value=ev.category;
-      openPanel('eventEditor');
+    const ev = state.events.find(item => item.id === id);
+    if (!ev) return;
+
+    try {
+      if (action === 'delete') {
+        await deleteEventFromSupabase(ev.id);
+        await loadEventsFromSupabase();
+        renderSelectedDayEvents();
+        return;
+      }
+
+      if (action === 'edit') {
+        state.editingEventId = ev.id;
+        const form = document.getElementById('eventEditForm');
+        form.title.value = ev.title;
+        form.date.value = ev.date;
+        form.startTime.value = ev.startTime;
+        form.endTime.value = ev.endTime;
+        form.category.value = ev.category;
+        openPanel('eventEditor');
+      }
+    } catch (err) {
+      alert(err.message);
     }
   });
 }
