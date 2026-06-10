@@ -13,7 +13,7 @@ async function signUp(email, password) {
     email,
     password,
     options: {
-      emailRedirectTo: 'https://DEINNAME.github.io/DEIN-REPO/'
+      emailRedirectTo: 'https://benhag02.github.io/'
     }
   })
   if (error) throw error
