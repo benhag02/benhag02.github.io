@@ -138,24 +138,11 @@ const state = {
   editingDeadlineId: null,
   credits: { earned: 15, total: 120 },
   job: { doneHours: 6, targetHours: 10, overtime: 14 },
-  deadlines: [
-    { id: crypto.randomUUID(), title: 'Seminararbeit KI', isoDate: '2026-06-10', date: '10. Jun', level: 'urgent' },
-    { id: crypto.randomUUID(), title: 'Case Study', isoDate: '2026-06-28', date: '28. Jun', level: 'warn' },
-    { id: crypto.randomUUID(), title: 'Klausur BWL', isoDate: '2026-07-15', date: '15. Jul', level: 'normal' }
-  ],
+  deadlines: [],
   tasks: {
-    today: [
-      { id: crypto.randomUUID(), title: 'Vorlesung Informationssysteme', category: 'uni', done: true },
-      { id: crypto.randomUUID(), title: 'Foliensatz für Seminar nacharbeiten', category: 'uni', done: false },
-      { id: crypto.randomUUID(), title: 'Datarocket Bericht fertigstellen', category: 'arbeit', done: false },
-      { id: crypto.randomUUID(), title: 'Mails und Orga prüfen', category: 'freizeit', done: false }
-    ]
+    today: []
   },
-  goals: [
-    { id: crypto.randomUUID(), title: 'Seminararbeit strukturieren', category: 'uni', subtitle: 'Einleitung und Forschungsfrage finalisieren' },
-    { id: crypto.randomUUID(), title: '10 Wochenstunden im Job erreichen', category: 'arbeit', subtitle: 'Stundenkonto sauber aktualisieren' },
-    { id: crypto.randomUUID(), title: 'Trainings- und Unisachen koordinieren', category: 'freizeit', subtitle: 'Kalender einmal komplett pflegen' }
-  ],
+  goals: [],
   events: [
     { id: crypto.randomUUID(), title: 'Vorlesung Business Intelligence', date: '2026-06-08', startTime: '10:15', endTime: '11:45', category: 'uni' },
     { id: crypto.randomUUID(), title: 'Datarocket Schicht', date: '2026-06-09', startTime: '13:00', endTime: '17:00', category: 'work' },
