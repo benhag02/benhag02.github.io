@@ -24,8 +24,13 @@ async function signOut() {
 }
 
 async function loadTasksFromSupabase() {
-  const user = await getCurrentUser()
-  if (!user) return
+  const user = await getCurrentUser();
+
+  if (!user) {
+    state.tasks.today = [];
+    renderTaskList('today', 'todayTaskList', 'todayTaskCount');
+    return;
+  }
 
   const { data, error } = await supabase
     .from('tasks')
