@@ -9,7 +9,13 @@ async function getCurrentUser() {
 }
 
 async function signUp(email, password) {
-  const { error } = await supabase.auth.signUp({ email, password })
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: 'https://DEINNAME.github.io/DEIN-REPO/'
+    }
+  })
   if (error) throw error
 }
 
